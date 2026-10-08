@@ -1,12 +1,34 @@
 {
-  "name": "alfa",
-  "module": "index.ts",
+  "name": "alfa-monorepo",
   "type": "module",
   "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
+  "workspaces": [
+    "packages/*",
+    "templates/*",
+    "examples/*"
+  ],
+  "imports": {
+    "#alfa": "./packages/alfa/src/index.ts",
+    "#alfa/http": "./packages/alfa/src/http/index.ts",
+    "#alfa/routing": "./packages/alfa/src/routing/index.ts",
+    "#alfa/database": "./packages/alfa/src/database/index.ts",
+    "#alfa/validation": "./packages/alfa/src/validation/index.ts",
+    "#alfa/session": "./packages/alfa/src/session/index.ts",
+    "#alfa/auth": "./packages/alfa/src/auth/index.ts",
+    "#alfa/container": "./packages/alfa/src/container/index.ts",
+    "#alfa/console": "./packages/alfa/src/console/index.ts",
+    "#alfa/utils": "./packages/alfa/src/utils/index.ts"
   },
-  "peerDependencies": {
-    "typescript": "^7"
+  "scripts": {
+    "test": "bun test",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "dev:link": "bun --cwd packages/alfa link"
+  },
+  "packageManager": "bun@1.4.2",
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.0"
   }
 }

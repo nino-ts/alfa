@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Alfa</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.14.7/dist/cdn.min.js"></script>
+  </head>
+  <body>
+    <main x-data="{ count: 0 }">
+      <h1>Alfa</h1>
+      <button type="button" x-on:click="count++">Alpine: <span x-text="count"></span></button>
+      <section hx-get="/api/hello" hx-trigger="load" hx-target="#hello"></section>
+      <div id="hello"></div>
+    </main>
+  </body>
+</html>

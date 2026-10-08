@@ -1,0 +1,40 @@
+{
+  "name": "create-alfa",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Scaffold a new alfa application",
+  "license": "MIT",
+  "keywords": [
+    "alfa",
+    "bun",
+    "create",
+    "scaffold",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nino-ts/alfa.git",
+    "directory": "packages/create-alfa"
+  },
+  "bugs": {
+    "url": "https://github.com/nino-ts/alfa/issues"
+  },
+  "engines": {
+    "bun": ">=1.4.0"
+  },
+  "bin": {
+    "create-alfa": "./index.ts"
+  },
+  "files": [
+    "index.ts",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.0"
+  }
+}

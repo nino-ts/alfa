@@ -1,0 +1,17 @@
+{
+  "name": "alfa-template-default",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#alfa": "alfa",
+    "#alfa/*": "alfa/*"
+  },
+  "scripts": {
+    "dev": "bun run index.ts",
+    "server": "bun run index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "alfa": "file:../../packages/alfa"
+  }
+}

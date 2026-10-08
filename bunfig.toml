@@ -1,0 +1,4 @@
+[install]
+# Internal scope; only "alfa" and "create-alfa" are ever published to npm.
+[install.scopes]
+"@alfa" = { url = "https://registry.npmjs.org" }

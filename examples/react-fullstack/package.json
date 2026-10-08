@@ -1,0 +1,19 @@
+{
+  "name": "alfa-example-react-fullstack",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#alfa": "alfa",
+    "#alfa/*": "alfa/*"
+  },
+  "scripts": {
+    "dev": "bun run index.tsx",
+    "server": "bun run index.tsx",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "alfa": "file:../../packages/alfa",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
