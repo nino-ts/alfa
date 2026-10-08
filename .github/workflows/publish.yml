@@ -31,10 +31,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Check
-        run: |
-          bun test
-          bunx tsc --noEmit
-          bunx biome check .
+        run: bun run verify
 
       - name: Publish alfa (skip if exists)
         working-directory: packages/alfa

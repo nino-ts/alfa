@@ -1,0 +1,58 @@
+# alfa — documentação para agentes (LLMs)
+
+> Índice de toda a documentação do `alfa`, framework backend TypeScript 7 para Bun.
+> Cada página também está disponível como Markdown puro.
+
+## Sobre
+
+`alfa` é um framework backend TypeScript para [Bun](https://bun.com). Zero dependências de runtime: usa `Bun.serve`, `Bun.sql`, `Bun.redis`, `Bun.password`, `Bun.CSRF`, `Bun.CookieMap` e `Bun.FileSystemRouter` diretamente.
+
+Este arquivo indexa as páginas. Para o corpus completo em um único arquivo, veja [llms-full.txt](./llms-full.txt).
+
+## Documentação
+
+- [Visão geral](https://github.com/nino-ts/alfa/blob/main/docs/index.md): o que é alfa, requisitos, início rápido, princípios.
+- [Getting started](https://github.com/nino-ts/alfa/blob/main/docs/getting-started.md): instalação, app mínimo, estrutura de pastas, scripts.
+- [HTTP](https://github.com/nino-ts/alfa/blob/main/docs/http.md): `HttpContext`, `compose`, helpers de resposta, middleware CSRF, cookies.
+- [Routing](https://github.com/nino-ts/alfa/blob/main/docs/routing.md): `Router`, path params, rotas nomeadas, `route()` tipado.
+- [Database](https://github.com/nino-ts/alfa/blob/main/docs/database.md): `defineTable` sobre `Bun.sql`, builder Drizzle-like, migrations.
+- [Validation](https://github.com/nino-ts/alfa/blob/main/docs/validation.md): adapter `StandardSchemaV1`, `parse`, `parseBody`.
+- [Auth](https://github.com/nino-ts/alfa/blob/main/docs/auth.md): `Bun.password` para senhas, tokens opacos, middleware `guard`.
+- [Session](https://github.com/nino-ts/alfa/blob/main/docs/session.md): `cookieSession` assinado com HMAC, `redisSession` via `Bun.RedisClient`.
+- [Frontend stacks](https://github.com/nino-ts/alfa/blob/main/docs/frontend-stacks.md): HTMX + Alpine (padrão), React com `Bun.FileSystemRouter`, API-only.
+- [CLI](https://github.com/nino-ts/alfa/blob/main/docs/cli.md): comandos `alfa serve|dev|migrate|make:*`.
+- [Container](https://github.com/nino-ts/alfa/blob/main/docs/container.md): IoC mínimo com `register`, `make` e lifecycle `boot`.
+- [Utils](https://github.com/nino-ts/alfa/blob/main/docs/utils.md): `escapeHtml`, `slugify`, `assert`, `toJson`.
+- [Deployment](https://github.com/nino-ts/alfa/blob/main/docs/deployment.md): binário compilado, Docker, variáveis de ambiente.
+
+## Fontes
+
+- [Repositório](https://github.com/nino-ts/alfa)
+- Pacotes npm: [`alfa`](https://www.npmjs.com/package/alfa), [`create-alfa`](https://www.npmjs.com/package/create-alfa)
+- Referência Bun: [bun.com/docs](https://bun.com/docs) — todas as primitivas usadas pelo framework
+
+## Como consumir
+
+```bash
+bun add alfa
+```
+
+```ts
+import { defineApp, http } from "alfa";
+import type { Router } from "alfa/routing";
+
+const app = defineApp({
+  routes: (router: Router) => {
+    router.get("/api/health", () => http.json({ ok: true })).name("health");
+  },
+});
+
+app.listen(3000);
+```
+
+## Convenções
+
+- Imports internos do monorepo usam `#alfa` e `#alfa/<módulo>`; a API pública usa `alfa` e `alfa/<módulo>` (sem sub-subpaths).
+- O diretório de páginas se chama `pages/` (não `views/` nem `app/`).
+- TypeScript 7.x, `noEmit`, zero `any`, zero suppressions.
+- Suporta apenas Bun (>= 1.4). Node.js, npm, yarn e pnpm não são suportados.

@@ -22,8 +22,13 @@
   "scripts": {
     "test": "bun test",
     "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "dev:link": "bun --cwd packages/alfa link"
+    "verify": "bun run verify:docs && bun run typecheck && bun run test && bun run lint",
+    "verify:docs": "bun run scripts/check-docs.ts",
+    "docs:build": "bun run scripts/build-docs.ts",
+    "link:all": "bun --cwd packages/alfa link && bun --cwd packages/create-alfa link",
+    "unlink:all": "bun --cwd packages/alfa unlink && bun --cwd packages/create-alfa unlink"
   },
   "packageManager": "bun@1.4.2",
   "devDependencies": {
