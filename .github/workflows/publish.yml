@@ -1,4 +1,31 @@
-name: Publish
+name: Publish (disabled)
+
+# Publishing to npm is INTENTIONALLY DISABLED until the registry naming is decided.
+#
+# Two blockers keep this workflow off:
+#
+#   1. The unscoped name `alfa` is TAKEN on npm by a third party:
+#        alfa@0.7.0 — "Effortless React State Management"
+#        maintainer: lsm · created 2016-03-26 · last modified 2022-06-13
+#      Publishing under that name is impossible without transferring it.
+#
+#   2. No Trusted Publisher has been configured on npm for this repository yet.
+#
+# Until both are resolved, this job fails on purpose so a stray `v*` tag can never
+# publish anything. See the ops runbook in the hub workspace:
+#   docs/ops/trusted-publisher-alfa.md  (hub-local, never shipped)
+#
+# To re-enable publishing:
+#   1. Pick a free registry name (`@ninots/alfa`, `@alfa/framework`, ...).
+#   2. Update packages/alfa/package.json and packages/create-alfa/package.json.
+#   3. Configure Trusted Publisher on npm for BOTH packages:
+#        provider: GitHub Actions
+#        organization: nino-ts
+#        repository: alfa
+#        workflow filename: publish.yml
+#        environment: (empty)
+#   4. Replace this file with the real OIDC publish workflow (no NPM_TOKEN).
+#   5. Remove the `if: false` guard below.
 
 on:
   workflow_dispatch:
@@ -7,50 +34,16 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
+    # Hard block: this job can never publish.
+    if: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.4.2"
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Upgrade npm (OIDC trusted publishing)
-        run: npm install -g npm@latest
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Check
-        run: bun run verify
-
-      - name: Publish alfa (skip if exists)
-        working-directory: packages/alfa
+      - name: Refuse to publish
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          NAME=$(node -p "require('./package.json').name")
-          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
-            echo "$NAME@$VERSION already published, skipping"
-          else
-            npm publish --provenance --access public
-          fi
-
-      - name: Publish create-alfa (skip if exists)
-        working-directory: packages/create-alfa
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          NAME=$(node -p "require('./package.json').name")
-          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
-            echo "$NAME@$VERSION already published, skipping"
-          else
-            npm publish --provenance --access public
-          fi
+          echo "::error::Publishing to npm is disabled."
+          echo "The npm name is unresolved and no Trusted Publisher is configured."
+          echo "See docs/ops/trusted-publisher-alfa.md in the hub workspace."
+          exit 1

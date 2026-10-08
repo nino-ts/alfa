@@ -28,13 +28,16 @@ Este arquivo indexa as páginas. Para o corpus completo em um único arquivo, ve
 ## Fontes
 
 - [Repositório](https://github.com/nino-ts/alfa)
-- Pacotes npm: [`alfa`](https://www.npmjs.com/package/alfa), [`create-alfa`](https://www.npmjs.com/package/create-alfa)
+- Pacotes npm: `alfa` e `create-alfa` — **ainda não publicados** (ver README do repo)
 - Referência Bun: [bun.com/docs](https://bun.com/docs) — todas as primitivas usadas pelo framework
 
 ## Como consumir
 
+**Ainda não publicado no npm** (nome em disputa, sem Trusted Publisher). Use o clone:
+
 ```bash
-bun add alfa
+git clone https://github.com/nino-ts/alfa && cd alfa && bun install
+cd packages/alfa && bun link
 ```
 
 ```ts

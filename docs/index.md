@@ -6,13 +6,27 @@
 
 ## Instalação
 
-```bash
-bun add alfa
-```
+> **Status: ainda não publicado no npm.** O nome `alfa` está ocupado por um pacote de
+> terceiro e nenhum Trusted Publisher foi configurado. Por enquanto, use
+> [`bun link`](#desenvolvimento-local-sem-publicar) a partir do clone.
 
 ```bash
-bunx create-alfa myapp   # scaffold
-cd myapp && bun install && bun run dev
+# development (sem publicação)
+git clone https://github.com/nino-ts/alfa
+cd alfa && bun install
+cd packages/alfa && bun link
+cd packages/create-alfa && bun link
+
+# em um app
+bun link alfa
+bunx create-alfa myapp
+```
+
+Depois que a publicação for habilitada:
+
+```bash
+bun add alfa
+bunx create-alfa myapp
 ```
 
 ## Requisitos

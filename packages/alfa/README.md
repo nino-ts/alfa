@@ -2,10 +2,13 @@
 
 Framework backend TypeScript para **Bun**. Sem dependências de runtime além das APIs nativas do Bun.
 
-```bash
-bun add alfa
-bunx alfa serve
-```
+> ⏳ **Ainda não publicado no npm.** Use o clone com `bun link`:
+>
+> ```bash
+> git clone https://github.com/nino-ts/alfa && cd alfa && bun install
+> cd packages/alfa && bun link
+> # em um app: bun link alfa && bunx alfa serve
+> ```
 
 ## Módulos
 

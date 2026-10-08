@@ -7,11 +7,15 @@
 
 ## Criar um projeto
 
+> **Status: ainda não publicado no npm.** Use o clone + `bun link` (ver
+> [Desenvolvimento local](#desenvolvimento-local-sem-publicar)).
+
 ```bash
-bunx create-alfa myapp
-cd myapp
-bun install
-bun run dev
+git clone https://github.com/nino-ts/alfa
+cd alfa && bun install
+
+cd packages/alfa && bun link
+cd ../create-alfa && bun link
 ```
 
 Com template React:
@@ -23,8 +27,11 @@ bunx create-alfa myapp --template react
 Adicionar a um projeto existente:
 
 ```bash
-bun add alfa
+bun add link:/caminho/para/alfa/packages/alfa
 ```
+
+Depois que a publicação for habilitada, `bun add alfa` e `bunx create-alfa` funcionarão
+diretamente.
 
 ## Estrutura gerada
 
@@ -85,26 +92,38 @@ O Bun carrega `.env` automaticamente. Use `--no-env-file` em produção quando a
 }
 ```
 
-## Desenvolvimento local do framework
+## Desenvolvimento local (sem publicar)
 
-Dentro do monorepo do `alfa`:
+Como o framework ainda não está no npm, o fluxo de trabalho usa `bun link`:
 
 ```bash
+# 1) no monorepo do alfa
+git clone https://github.com/nino-ts/alfa
+cd alfa
 bun install
 
+# 2) registra os pacotes globalmente
 cd packages/alfa && bun link
 cd ../create-alfa && bun link
 
-# em outro projeto
+# 3) em um projeto novo
+bunx create-alfa myapp
+cd myapp
 bun link alfa
 bun install
 bun run dev
 ```
 
-Sem link global, use caminho absoluto:
+Sem link global, aponte direto para o caminho:
 
 ```bash
 bun add link:/caminho/para/alfa/packages/alfa
+```
+
+Para desvincular:
+
+```bash
+bun unlink alfa
 ```
 
 ## tsconfig

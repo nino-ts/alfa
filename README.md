@@ -6,10 +6,15 @@ Framework backend **TypeScript 7** para **Bun**. Zero dependências de runtime f
 
 Este repo publica **apenas 2 pacotes** no npm:
 
-| Pacote | Papel |
-|---|---|
-| [`alfa`](./packages/alfa) | Framework (bin `alfa` + módulos `alfa/*`) |
-| [`create-alfa`](./packages/create-alfa) | Scaffolder (`bunx create-alfa`) |
+| Pacote | Papel | Status |
+|---|---|---|
+| [`alfa`](./packages/alfa) | Framework (bin `alfa` + módulos `alfa/*`) | ⏳ não publicado |
+| [`create-alfa`](./packages/create-alfa) | Scaffolder (`bunx create-alfa`) | ⏳ não publicado |
+
+> **Publicação no npm desativada.** O nome `alfa` está ocupado por um pacote de terceiro
+> (`alfa@0.7.0`, mantido por `lsm`, sem alterações desde 2022) e nenhum Trusted Publisher foi
+> configurado. O workflow de publish falha de propósito para impedir qualquer publicação
+> acidental. Até o nome ser resolvido, use `bun link` a partir do clone.
 
 ## Layout
 
