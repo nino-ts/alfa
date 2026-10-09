@@ -26,6 +26,12 @@ alfa/
 ├── templates/
 │   └── default/           # app base (pages/, HTMX + Alpine)
 ├── examples/
+│   ├── hello-world/       # smallest app
+│   ├── blog/              # dynamic routes + data
+│   ├── api/               # REST JSON API
+│   ├── auth/              # session middleware + passwords
+│   ├── forms/             # HTMX + Standard Schema validation
+│   ├── database/          # ORM over Bun.sql + migrations
 │   ├── hypermedia/        # HTMX + Alpine
 │   ├── react-fullstack/   # React + Bun HTML import
 │   └── vue/               # Vue + Bun HTML import

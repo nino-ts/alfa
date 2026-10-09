@@ -6,7 +6,7 @@
  */
 
 import { resolve } from "node:path";
-import type { HttpContext } from "./http/index";
+import { compose, type HttpContext, type Middleware } from "./http/index";
 import {
   type AppRouter,
   createAppRouter,
@@ -22,6 +22,11 @@ export interface DefineAppOptions {
   publicDir?: string;
   /** Passed through to `Bun.serve` (error pages / HMR). */
   development?: boolean;
+  /**
+   * Middlewares composed around every matched route, left to right.
+   * Use for session, CSRF, logging, etc.
+   */
+  middleware?: Middleware[];
 }
 
 export interface App {
@@ -45,6 +50,7 @@ export interface App {
 export function defineApp(options: DefineAppOptions = {}): App {
   const dir = resolve(process.cwd(), options.dir ?? "pages");
   const router = createAppRouter({ dir });
+  const middlewares = options.middleware ?? [];
 
   const fetch = async (req: Request): Promise<Response> => {
     const match = router.match(req);
@@ -64,13 +70,20 @@ export function defineApp(options: DefineAppOptions = {}): App {
       cookies: new Bun.CookieMap(req.headers.get("cookie") ?? ""),
     };
 
-    const out = await handler(ctx);
-    if (typeof out === "string") {
-      return new Response(out, {
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+    const invoke = async (): Promise<Response> => {
+      const out = await handler(ctx);
+      if (typeof out === "string") {
+        return new Response(out, {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        });
+      }
+      return out;
+    };
+
+    if (middlewares.length === 0) {
+      return invoke();
     }
-    return out;
+    return compose(...middlewares)(ctx, invoke);
   };
 
   return {

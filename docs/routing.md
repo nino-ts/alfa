@@ -72,6 +72,18 @@ defineApp().listen(3000);
 `defineApp({ dir })` scans `dir` (default `./pages`). `defineApp({ publicDir })`
 also serves a static directory at `/public/*` via Bun's directory routes.
 
+`defineApp({ middleware })` composes middlewares around every matched route —
+use it for session, CSRF or logging:
+
+```ts
+import { defineApp } from "alfa";
+import { cookieSession } from "alfa/session";
+
+const session = cookieSession({ secret: process.env.APP_SECRET ?? "dev" });
+
+defineApp({ middleware: [session.middleware] }).listen(3000);
+```
+
 The underlying module is `alfa/routing`, which exports `createAppRouter(options)`
 and `loadRouteHandler(filePath)` — a thin layer over `Bun.FileSystemRouter`. Most
 apps use `defineApp` and never import it directly.

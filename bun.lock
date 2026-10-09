@@ -10,6 +10,42 @@
         "typescript": "^7.0.0",
       },
     },
+    "examples/api": {
+      "name": "alfa-example-api",
+      "dependencies": {
+        "alfa": "file:../../packages/alfa",
+      },
+    },
+    "examples/auth": {
+      "name": "alfa-example-auth",
+      "dependencies": {
+        "alfa": "file:../../packages/alfa",
+      },
+    },
+    "examples/blog": {
+      "name": "alfa-example-blog",
+      "dependencies": {
+        "alfa": "file:../../packages/alfa",
+      },
+    },
+    "examples/database": {
+      "name": "alfa-example-database",
+      "dependencies": {
+        "alfa": "file:../../packages/alfa",
+      },
+    },
+    "examples/forms": {
+      "name": "alfa-example-forms",
+      "dependencies": {
+        "alfa": "file:../../packages/alfa",
+      },
+    },
+    "examples/hello-world": {
+      "name": "alfa-example-hello-world",
+      "dependencies": {
+        "alfa": "file:../../packages/alfa",
+      },
+    },
     "examples/hypermedia": {
       "name": "alfa-example-hypermedia",
       "dependencies": {
@@ -164,6 +200,18 @@
 
     "alfa": ["alfa@workspace:packages/alfa"],
 
+    "alfa-example-api": ["alfa-example-api@workspace:examples/api"],
+
+    "alfa-example-auth": ["alfa-example-auth@workspace:examples/auth"],
+
+    "alfa-example-blog": ["alfa-example-blog@workspace:examples/blog"],
+
+    "alfa-example-database": ["alfa-example-database@workspace:examples/database"],
+
+    "alfa-example-forms": ["alfa-example-forms@workspace:examples/forms"],
+
+    "alfa-example-hello-world": ["alfa-example-hello-world@workspace:examples/hello-world"],
+
     "alfa-example-hypermedia": ["alfa-example-hypermedia@workspace:examples/hypermedia"],
 
     "alfa-example-react-fullstack": ["alfa-example-react-fullstack@workspace:examples/react-fullstack"],
@@ -203,5 +251,17 @@
     "undici-types": ["undici-types@8.9.0", "", {}, "sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg=="],
 
     "vue": ["vue@3.5.43", "", { "dependencies": { "@vue/compiler-dom": "3.5.43", "@vue/compiler-sfc": "3.5.43", "@vue/runtime-dom": "3.5.43", "@vue/server-renderer": "3.5.43", "@vue/shared": "3.5.43" }, "peerDependencies": { "typescript": "*" }, "optionalPeers": ["typescript"] }, "sha512-o5qZoksdnjIKvW1srZ3ab7pcDNYAerBjRe54D0LBLfRdCYFrSgBHVXokMas35czQc0//lmx4/tuY4ZNQ+Rf2Ng=="],
+
+    "alfa-example-api/alfa": ["alfa@file:packages/alfa", { "devDependencies": { "@types/bun": "^1.4.2", "typescript": "^7.0.0" }, "peerDependencies": { "typescript": "^7.0.0" }, "bin": { "alfa": "./bin/alfa.ts" } }],
+
+    "alfa-example-auth/alfa": ["alfa@file:packages/alfa", { "devDependencies": { "@types/bun": "^1.4.2", "typescript": "^7.0.0" }, "peerDependencies": { "typescript": "^7.0.0" }, "bin": { "alfa": "./bin/alfa.ts" } }],
+
+    "alfa-example-blog/alfa": ["alfa@file:packages/alfa", { "devDependencies": { "@types/bun": "^1.4.2", "typescript": "^7.0.0" }, "peerDependencies": { "typescript": "^7.0.0" }, "bin": { "alfa": "./bin/alfa.ts" } }],
+
+    "alfa-example-database/alfa": ["alfa@file:packages/alfa", { "devDependencies": { "@types/bun": "^1.4.2", "typescript": "^7.0.0" }, "peerDependencies": { "typescript": "^7.0.0" }, "bin": { "alfa": "./bin/alfa.ts" } }],
+
+    "alfa-example-forms/alfa": ["alfa@file:packages/alfa", { "devDependencies": { "@types/bun": "^1.4.2", "typescript": "^7.0.0" }, "peerDependencies": { "typescript": "^7.0.0" }, "bin": { "alfa": "./bin/alfa.ts" } }],
+
+    "alfa-example-hello-world/alfa": ["alfa@file:packages/alfa", { "devDependencies": { "@types/bun": "^1.4.2", "typescript": "^7.0.0" }, "peerDependencies": { "typescript": "^7.0.0" }, "bin": { "alfa": "./bin/alfa.ts" } }],
   }
 }

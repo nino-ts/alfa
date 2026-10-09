@@ -1,0 +1,13 @@
+{
+  "name": "alfa-example-database",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch index.ts",
+    "start": "bun index.ts",
+    "migrate": "bunx alfa migrate"
+  },
+  "dependencies": {
+    "alfa": "file:../../packages/alfa"
+  }
+}
