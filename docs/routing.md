@@ -72,6 +72,10 @@ defineApp().listen(3000);
 `defineApp({ dir })` scans `dir` (default `./pages`). `defineApp({ publicDir })`
 also serves a static directory at `/public/*` via Bun's directory routes.
 
+The underlying module is `alfa/routing`, which exports `createAppRouter(options)`
+and `loadRouteHandler(filePath)` — a thin layer over `Bun.FileSystemRouter`. Most
+apps use `defineApp` and never import it directly.
+
 ```ts
 const app = defineApp({ dir: "pages", publicDir: "public" });
 
