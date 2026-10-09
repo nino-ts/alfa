@@ -1,91 +1,86 @@
 # alfa
 
-> Framework backend TypeScript 7 para Bun. Zero dependências de runtime.
+> TypeScript 7 backend framework for Bun. Zero runtime dependencies.
 
-`alfa` é um framework de backend para [Bun](https://bun.com), escrito em TypeScript 7 e publicado como fonte `.ts` (sem etapa de build). Tudo que o Bun já oferece nativamente é usado direto — o framework não reimplementa servidor HTTP, driver SQL, Redis, hashing, CSRF ou cookies.
+`alfa` is a backend framework for [Bun](https://bun.com). Routing is file-system
+based, delegated to [`Bun.FileSystemRouter`](https://bun.com/docs/runtime/file-system-router);
+every other primitive is the Bun-native API. The framework does not reimplement the
+HTTP server, SQL driver, Redis, hashing, CSRF or cookies.
 
-## Instalação
+## Status
 
-> **Status: ainda não publicado no npm.** O nome `alfa` está ocupado por um pacote de
-> terceiro e nenhum Trusted Publisher foi configurado. Por enquanto, use
-> [`bun link`](#desenvolvimento-local-sem-publicar) a partir do clone.
+> **Not published to npm yet.** The name `alfa` is taken by a third party, so use
+> the clone with `bun link` (see [getting-started](./getting-started.md)).
+
+## Install (local)
 
 ```bash
-# development (sem publicação)
 git clone https://github.com/nino-ts/alfa
 cd alfa && bun install
 cd packages/alfa && bun link
-cd packages/create-alfa && bun link
+cd ../create-alfa && bun link
 
-# em um app
-bun link alfa
+# in an app
 bunx create-alfa myapp
+cd myapp && bun link alfa && bun install
+bun --watch index.ts
 ```
 
-Depois que a publicação for habilitada:
+## Quick start
 
-```bash
-bun add alfa
-bunx create-alfa myapp
+```ts
+// index.ts
+import { defineApp } from "alfa";
+
+defineApp().listen(3000);
 ```
 
-## Requisitos
+```ts
+// pages/index.ts
+export default () => "<h1>Hello alfa</h1>";
+```
 
-| Suportado | Não suportado |
+```ts
+// pages/api/health.ts
+export default () => Response.json({ ok: true });
+```
+
+## Pillars
+
+1. **Bun native** — `Bun.serve`, `Bun.FileSystemRouter`, `Bun.sql`, `Bun.redis`,
+   `Bun.password`, `Bun.CSRF`, `Bun.CookieMap`, `Bun.escapeHTML` used directly.
+2. **Simplicity** — small surface, no build step, zero runtime dependencies,
+   nothing Bun already does.
+3. **Batteries included** — database (ORM), validation, auth, session, http, console.
+4. **Developer experience** — TypeScript 7, `llms.txt`, clear errors.
+
+## Requirements
+
+| Supported | Not supported |
 |---|---|
 | Bun >= 1.4 (runtime + package manager) | Node.js, npm client, yarn, pnpm |
 | TypeScript 7.x | — |
 
-## Início rápido
+## Documentation
 
-```ts
-import { defineApp, http } from "alfa";
-import { registerRoutes } from "./routes";
-
-const app = defineApp({ routes: registerRoutes });
-app.listen(3000);
-```
-
-```ts
-// routes.ts
-import { http } from "alfa";
-import type { Router } from "alfa/routing";
-
-export function registerRoutes(router: Router): void {
-  router.get("/api/health", () => http.json({ ok: true })).name("health");
-}
-```
-
-## Documentação
-
-| Guia | Conteúdo |
+| Guide | Contents |
 |---|---|
-| [getting-started.md](./getting-started.md) | Instalação, app mínimo, estrutura de pastas |
+| [getting-started.md](./getting-started.md) | install, minimal app, layout |
 | [http.md](./http.md) | `HttpContext`, `compose`, `json`/`text`/`redirect`, `csrf`, cookies |
-| [routing.md](./routing.md) | `Router`, params, nomes, `route()` tipado |
-| [database.md](./database.md) | `defineTable` sobre `Bun.sql`, migrations |
-| [validation.md](./validation.md) | Adapter `StandardSchemaV1` |
-| [auth.md](./auth.md) | Senhas, tokens, `guard` |
+| [routing.md](./routing.md) | `pages/`, params, catch-all, `defineApp` |
+| [database.md](./database.md) | `defineTable` over `Bun.sql`, migrations |
+| [validation.md](./validation.md) | `StandardSchemaV1` adapter |
+| [auth.md](./auth.md) | passwords, opaque tokens, `guard` |
 | [session.md](./session.md) | `cookieSession`, `redisSession` |
-| [frontend-stacks.md](./frontend-stacks.md) | HTMX/Alpine, React com `Bun.FileSystemRouter`, API-only |
-| [cli.md](./cli.md) | Comandos `alfa` |
-| [container.md](./container.md) | IoC: `register`, `make`, `boot` |
-| [utils.md](./utils.md) | `escapeHtml`, `slugify`, `assert`, `toJson` |
-| [deployment.md](./deployment.md) | Docker, binário compilado, variáveis de ambiente |
+| [frontend-stacks.md](./frontend-stacks.md) | HTMX/Alpine, React, Vue, API-only |
+| [cli.md](./cli.md) | `alfa migrate`, `make:page`, `make:migration` |
+| [deployment.md](./deployment.md) | compiled binary, Docker, env |
 
-## Princípios
+## Documentation index
 
-1. **Bun-first** — `Bun.serve`, `Bun.sql`, `Bun.redis`, `Bun.password`, `Bun.CSRF`, `Bun.CookieMap`, `Bun.FileSystemRouter` são usados diretamente.
-2. **Zero dependência de runtime** — nada além das APIs nativas do Bun.
-3. **Fonte TypeScript** — `.ts` publicado, `noEmit`, sem pipeline JS.
-4. **Sem `any`, sem suppressions** — `strict` + `noUncheckedIndexedAccess`.
-5. **Padrões de mercado** — nomes e APIs alinhados a AdonisJS, Next.js, Drizzle e Hono.
+- [Full guide (llms-full.txt)](./llms-full.txt) — every page in one file
+- [Index for agents (llms.txt)](./llms.txt) — reading map
 
-## Índice de documentação
-
-- [Guia completo (llms-full.txt)](./llms-full.txt) — todas as páginas em um único arquivo
-- [Índice para agentes (llms.txt)](./llms.txt) — mapa de rotas de leitura
-
-## Licença
+## License
 
 MIT

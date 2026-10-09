@@ -1,113 +1,143 @@
 # Frontend stacks
 
-`alfa` não impõe engine de template nem framework de frontend. O framework entrega o servidor e deixa a escolha de stack para você — a mesma abordagem do AdonisJS.
+`alfa` ships no template engine and no view package. The server is yours; pick a
+frontend approach. Escaping is a render-layer concern — use
+[`Bun.escapeHTML()`](https://bun.com/reference/bun/escapeHTML) when you build HTML
+strings by hand.
 
-## Resumo
+## Options
 
-| Stack | Quando usar | Como |
+| Stack | Best for | How |
 |---|---|---|
-| **HTMX + Alpine** (padrão) | SSR leve, formulários, admin | `pages/*.html` + `<script>` CDN |
-| **React (Bun fullstack)** | SPA/streaming, React ecosystem | `pages/*.tsx` + `Bun.FileSystemRouter` |
-| **API-only** | Backend consumindo SPA separada | `Response.json` + `fetch` no cliente |
+| **HTMX + Alpine** | server-driven pages, forms, admin | `pages/*.ts` returning HTML strings |
+| **React (Bun fullstack)** | client-rendered SPA | Bun HTML import bundles `*.tsx` |
+| **Vue (Bun fullstack)** | client-rendered SPA | Bun HTML import bundles `*.ts` |
+| **API-only** | separate frontend | `Response.json` routes |
 
-Não existe pacote de views no core. TSX é escolha do usuário; `alfa` não tem `@alfa/view`.
+There is no server-side component model, no RSC, no Inertia.
 
 ---
 
-## HTMX + Alpine (padrão)
+## HTMX + Alpine
 
-```html
-<!-- pages/index.html -->
-<!doctype html>
-<html lang="pt-BR">
+```ts
+// pages/index.ts
+export default () => `<!doctype html>
+<html>
   <head>
-    <meta charset="utf-8" />
-    <title>app</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script defer src="https://unpkg.com/alpinejs@3.14.7/dist/cdn.min.js"></script>
   </head>
   <body>
     <main x-data="{ count: 0 }">
-      <h1>app</h1>
-      <button type="button" x-on:click="count++">
-        count: <span x-text="count"></span>
-      </button>
-      <section hx-get="/api/stats" hx-trigger="load" hx-target="#stats"></section>
-      <div id="stats"></div>
+      <button type="button" x-on:click="count++">count: <span x-text="count"></span></button>
+      <button type="button" hx-get="/api/health" hx-target="#out">call API</button>
+      <pre id="out"></pre>
     </main>
   </body>
-</html>
+</html>`;
 ```
-
-Handler no servidor:
 
 ```ts
-router.get("/api/stats", () => http.json({ users: 12 }));
+// pages/api/health.ts
+export default () => Response.json({ ok: true });
 ```
 
-Sem bundler, sem build step. O Bun serve o HTML estático.
+No bundler, no extra dependencies. Bun serves the HTML string directly.
+
+**Escaping:** HTMX does not escape — it swaps server HTML. When you interpolate
+user data into a string, call `Bun.escapeHTML(value)`. Alpine's `x-text` writes via
+`textContent` (escapes); `x-html` does not.
 
 ---
 
-## React com Bun fullstack
+## React (Bun fullstack)
 
-O Bun faz bundle de `.tsx` nativamente e resolve `pages/` via `Bun.FileSystemRouter`.
+Bun bundles `*.tsx` and serves the result through an HTML import:
+
+```html
+<!-- index.html -->
+<!doctype html>
+<div id="root"></div>
+<script type="module" src="./src/app.tsx"></script>
+```
 
 ```tsx
-// pages/index.tsx
-export default function Home() {
-  return <main><h1>alfa + React</h1></main>;
+// src/app.tsx
+import { useState } from "react";
+import { createRoot } from "react-dom/client";
+
+function App() {
+  const [count, setCount] = useState(0);
+  return <button type="button" onClick={() => setCount((c) => c + 1)}>count: {count}</button>;
 }
+
+const root = document.getElementById("root");
+if (root) createRoot(root).render(<App />);
 ```
 
 ```ts
-// index.tsx
-import { FileSystemRouter } from "bun";
-import home from "./pages/index.html"; // Bun empacota TSX em dev
+// index.ts — Bun serves the page; alfa serves the API
+import { defineApp } from "alfa";
+import html from "./index.html";
 
-const pages = new FileSystemRouter({
-  dir: `${import.meta.dir}/pages`,
-  style: "nextjs",
-});
+const api = defineApp({ dir: `${import.meta.dir}/pages` });
 
-Bun.serve({
-  routes: {
-    "/api/health": new Response(JSON.stringify({ ok: true }), {
-      headers: { "content-type": "application/json" },
-    }),
-  },
-  fetch(req) {
-    const match = pages.match(new URL(req.url));
-    return match ? new Response(Bun.file(match.filePath)) : new Response("404", { status: 404 });
-  },
-});
+Bun.serve({ port: 3000, development: true, routes: { "/": html }, fetch: api.fetch });
 ```
 
-Em produção, `bun build --target=bun` gera o manifest estático e o `Bun.serve` serve os assets sem bundling em runtime.
+See [`examples/react-fullstack`](https://github.com/nino-ts/alfa/tree/main/examples/react-fullstack).
 
-Exemplo completo: [`examples/react-fullstack`](https://github.com/nino-ts/alfa/tree/main/examples/react-fullstack).
+---
+
+## Vue (Bun fullstack)
+
+Same idea. This example uses Vue's render function (no Single-File Component, so
+no bundler plugin is needed):
+
+```ts
+// src/app.ts
+import { createApp, h, ref } from "vue";
+
+createApp({
+  setup() {
+    const count = ref(0);
+    return () => h("main", [h("h1", "alfa + Vue"), h("button", { type: "button", onClick: () => (count.value += 1) }, `count: ${count.value}`)]);
+  },
+}).mount("#root");
+```
+
+See [`examples/vue`](https://github.com/nino-ts/alfa/tree/main/examples/vue).
+Single-File Components (`.vue`) would need a Bun plugin; that is out of scope.
 
 ---
 
 ## API-only
 
 ```ts
-router.get("/api/users", async () => {
-  const users = usersTable.select();
-  return http.json(await users.get());
-});
+// pages/api/users.ts
+import type { HttpContext } from "alfa/http";
+
+export default async (ctx: HttpContext) => {
+  const rows = await db`SELECT id, name FROM users`;
+  return Response.json(rows);
+};
 ```
 
-Consumido por uma SPA separada via `fetch`. Sem acoplamento do frontend ao servidor.
+Consume it from any separate frontend.
 
 ---
 
-## Inertia / outras stacks
+## Escaping summary
 
-`alfa` não empacota Inertia nem adapters de deploy. Trate como integração externa: registre o middleware do Inertia manualmente em `compose()`.
+| Layer | Escapes? |
+|---|---|
+| React / JSX | yes |
+| Vue | yes (interpolation) |
+| Alpine `x-text` | yes |
+| Alpine `x-html` | no |
+| HTMX | no (server builds the HTML) |
+| Hand-built HTML string | use `Bun.escapeHTML()` |
 
-## Resumo de regras
-
-- O diretório de páginas é **`pages/`**.
-- Não existe `views/` nem `app/` no core.
-- `alfa` não possui engine de template; use HTML estático, TSX ou o que o Bun suportar nativamente.
+`alfa` exposes no `escapeHtml` helper — `Bun.escapeHTML` already exists and is
+optimized (480 MB/s–20 GB/s).

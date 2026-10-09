@@ -7,93 +7,88 @@
 
 # alfa
 
-> Framework backend TypeScript 7 para Bun. Zero dependências de runtime.
+> TypeScript 7 backend framework for Bun. Zero runtime dependencies.
 
-`alfa` é um framework de backend para [Bun](https://bun.com), escrito em TypeScript 7 e publicado como fonte `.ts` (sem etapa de build). Tudo que o Bun já oferece nativamente é usado direto — o framework não reimplementa servidor HTTP, driver SQL, Redis, hashing, CSRF ou cookies.
+`alfa` is a backend framework for [Bun](https://bun.com). Routing is file-system
+based, delegated to [`Bun.FileSystemRouter`](https://bun.com/docs/runtime/file-system-router);
+every other primitive is the Bun-native API. The framework does not reimplement the
+HTTP server, SQL driver, Redis, hashing, CSRF or cookies.
 
-## Instalação
+## Status
 
-> **Status: ainda não publicado no npm.** O nome `alfa` está ocupado por um pacote de
-> terceiro e nenhum Trusted Publisher foi configurado. Por enquanto, use
-> [`bun link`](#desenvolvimento-local-sem-publicar) a partir do clone.
+> **Not published to npm yet.** The name `alfa` is taken by a third party, so use
+> the clone with `bun link` (see [getting-started](./getting-started.md)).
+
+## Install (local)
 
 ```bash
-# development (sem publicação)
 git clone https://github.com/nino-ts/alfa
 cd alfa && bun install
 cd packages/alfa && bun link
-cd packages/create-alfa && bun link
+cd ../create-alfa && bun link
 
-# em um app
-bun link alfa
+# in an app
 bunx create-alfa myapp
+cd myapp && bun link alfa && bun install
+bun --watch index.ts
 ```
 
-Depois que a publicação for habilitada:
+## Quick start
 
-```bash
-bun add alfa
-bunx create-alfa myapp
+```ts
+// index.ts
+import { defineApp } from "alfa";
+
+defineApp().listen(3000);
 ```
 
-## Requisitos
+```ts
+// pages/index.ts
+export default () => "<h1>Hello alfa</h1>";
+```
 
-| Suportado | Não suportado |
+```ts
+// pages/api/health.ts
+export default () => Response.json({ ok: true });
+```
+
+## Pillars
+
+1. **Bun native** — `Bun.serve`, `Bun.FileSystemRouter`, `Bun.sql`, `Bun.redis`,
+   `Bun.password`, `Bun.CSRF`, `Bun.CookieMap`, `Bun.escapeHTML` used directly.
+2. **Simplicity** — small surface, no build step, zero runtime dependencies,
+   nothing Bun already does.
+3. **Batteries included** — database (ORM), validation, auth, session, http, console.
+4. **Developer experience** — TypeScript 7, `llms.txt`, clear errors.
+
+## Requirements
+
+| Supported | Not supported |
 |---|---|
 | Bun >= 1.4 (runtime + package manager) | Node.js, npm client, yarn, pnpm |
 | TypeScript 7.x | — |
 
-## Início rápido
+## Documentation
 
-```ts
-import { defineApp, http } from "alfa";
-import { registerRoutes } from "./routes";
-
-const app = defineApp({ routes: registerRoutes });
-app.listen(3000);
-```
-
-```ts
-// routes.ts
-import { http } from "alfa";
-import type { Router } from "alfa/routing";
-
-export function registerRoutes(router: Router): void {
-  router.get("/api/health", () => http.json({ ok: true })).name("health");
-}
-```
-
-## Documentação
-
-| Guia | Conteúdo |
+| Guide | Contents |
 |---|---|
-| [getting-started.md](./getting-started.md) | Instalação, app mínimo, estrutura de pastas |
+| [getting-started.md](./getting-started.md) | install, minimal app, layout |
 | [http.md](./http.md) | `HttpContext`, `compose`, `json`/`text`/`redirect`, `csrf`, cookies |
-| [routing.md](./routing.md) | `Router`, params, nomes, `route()` tipado |
-| [database.md](./database.md) | `defineTable` sobre `Bun.sql`, migrations |
-| [validation.md](./validation.md) | Adapter `StandardSchemaV1` |
-| [auth.md](./auth.md) | Senhas, tokens, `guard` |
+| [routing.md](./routing.md) | `pages/`, params, catch-all, `defineApp` |
+| [database.md](./database.md) | `defineTable` over `Bun.sql`, migrations |
+| [validation.md](./validation.md) | `StandardSchemaV1` adapter |
+| [auth.md](./auth.md) | passwords, opaque tokens, `guard` |
 | [session.md](./session.md) | `cookieSession`, `redisSession` |
-| [frontend-stacks.md](./frontend-stacks.md) | HTMX/Alpine, React com `Bun.FileSystemRouter`, API-only |
-| [cli.md](./cli.md) | Comandos `alfa` |
-| [container.md](./container.md) | IoC: `register`, `make`, `boot` |
-| [utils.md](./utils.md) | `escapeHtml`, `slugify`, `assert`, `toJson` |
-| [deployment.md](./deployment.md) | Docker, binário compilado, variáveis de ambiente |
+| [frontend-stacks.md](./frontend-stacks.md) | HTMX/Alpine, React, Vue, API-only |
+| [cli.md](./cli.md) | `alfa migrate`, `make:page`, `make:migration` |
+| [deployment.md](./deployment.md) | compiled binary, Docker, env |
 
-## Princípios
+## Documentation index
 
-1. **Bun-first** — `Bun.serve`, `Bun.sql`, `Bun.redis`, `Bun.password`, `Bun.CSRF`, `Bun.CookieMap`, `Bun.FileSystemRouter` são usados diretamente.
-2. **Zero dependência de runtime** — nada além das APIs nativas do Bun.
-3. **Fonte TypeScript** — `.ts` publicado, `noEmit`, sem pipeline JS.
-4. **Sem `any`, sem suppressions** — `strict` + `noUncheckedIndexedAccess`.
-5. **Padrões de mercado** — nomes e APIs alinhados a AdonisJS, Next.js, Drizzle e Hono.
+- [Full guide (llms-full.txt)](./llms-full.txt) — every page in one file
+- [Index for agents (llms.txt)](./llms.txt) — reading map
 
-## Índice de documentação
-
-- [Guia completo (llms-full.txt)](./llms-full.txt) — todas as páginas em um único arquivo
-- [Índice para agentes (llms.txt)](./llms.txt) — mapa de rotas de leitura
-
-## Licença
+## License
 
 MIT
 
@@ -101,130 +96,88 @@ MIT
 
 # Getting started
 
-## Requisitos
+## Requirements
 
-- **Bun >= 1.4** — runtime e package manager. Node.js, npm, yarn e pnpm não são suportados.
-- **TypeScript 7.x** —peer dependency; o framework publica fontes `.ts` e usa `noEmit`.
+- **Bun >= 1.4** — runtime and package manager. Node.js, npm, yarn and pnpm are not supported.
+- **TypeScript 7.x** — peer dependency; the framework publishes `.ts` sources (`noEmit`).
 
-## Criar um projeto
+## Status
 
-> **Status: ainda não publicado no npm.** Use o clone + `bun link` (ver
-> [Desenvolvimento local](#desenvolvimento-local-sem-publicar)).
+> **Not published to npm yet.** The name `alfa` is taken by a third party. Until
+> that is resolved, use the clone with `bun link`.
 
 ```bash
 git clone https://github.com/nino-ts/alfa
-cd alfa && bun install
+cd alfa
+bun install
 
 cd packages/alfa && bun link
 cd ../create-alfa && bun link
 ```
 
-Com template React:
+In your app:
 
 ```bash
-bunx create-alfa myapp --template react
+bunx create-alfa myapp
+cd myapp
+bun link alfa
+bun install
+bun --watch index.ts
 ```
 
-Adicionar a um projeto existente:
-
-```bash
-bun add link:/caminho/para/alfa/packages/alfa
-```
-
-Depois que a publicação for habilitada, `bun add alfa` e `bunx create-alfa` funcionarão
-diretamente.
-
-## Estrutura gerada
+## Project layout
 
 ```
 myapp/
-├── index.ts        # entry: defineApp + listen
-├── routes.ts       # registro de rotas
-├── pages/          # index.html (HTMX) ou index.tsx (React)
-├── package.json
-├── tsconfig.json
-└── .env.example
+├── index.ts            # defineApp().listen(...)
+├── pages/              # routes (file-system)
+│   ├── index.ts        # /
+│   └── api/health.ts   # /api/health
+└── package.json
 ```
 
-## App mínimo
+## Minimal app
 
 ```ts
 // index.ts
 import { defineApp } from "alfa";
-import { registerRoutes } from "./routes";
 
-const app = defineApp({ routes: registerRoutes });
-
-app.listen(Number(process.env.PORT ?? 3000));
+defineApp().listen(Number(process.env.PORT ?? 3000));
 ```
 
 ```ts
-// routes.ts
-import { http } from "alfa";
-import type { Router } from "alfa/routing";
-
-export function registerRoutes(router: Router): void {
-  router.get("/api/health", () => http.json({ ok: true })).name("health");
-}
+// pages/index.ts
+export default () => "<h1>Hello alfa</h1>";
 ```
 
-## Variáveis de ambiente
+```ts
+// pages/api/health.ts
+export default () => Response.json({ ok: true });
+```
+
+## Environment variables
 
 ```
 PORT=3000
-APP_SECRET=troque-me
+APP_SECRET=change-me
 DATABASE_URL=sqlite://app.db
 REDIS_URL=redis://localhost:6379
 ```
 
-O Bun carrega `.env` automaticamente. Use `--no-env-file` em produção quando as variáveis vierem do host.
+Bun loads `.env` automatically. Use `--no-env-file` when variables come from the host.
 
 ## Scripts
 
 ```json
 {
   "scripts": {
-    "dev": "alfa dev",
-    "serve": "alfa serve",
-    "migrate": "alfa migrate",
+    "dev": "bun --watch index.ts",
+    "start": "bun index.ts",
+    "migrate": "bunx alfa migrate",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   }
 }
-```
-
-## Desenvolvimento local (sem publicar)
-
-Como o framework ainda não está no npm, o fluxo de trabalho usa `bun link`:
-
-```bash
-# 1) no monorepo do alfa
-git clone https://github.com/nino-ts/alfa
-cd alfa
-bun install
-
-# 2) registra os pacotes globalmente
-cd packages/alfa && bun link
-cd ../create-alfa && bun link
-
-# 3) em um projeto novo
-bunx create-alfa myapp
-cd myapp
-bun link alfa
-bun install
-bun run dev
-```
-
-Sem link global, aponte direto para o caminho:
-
-```bash
-bun add link:/caminho/para/alfa/packages/alfa
-```
-
-Para desvincular:
-
-```bash
-bun unlink alfa
 ```
 
 ## tsconfig
@@ -248,16 +201,20 @@ bun unlink alfa
 }
 ```
 
-`allowImportingTsExtensions: false` é obrigatório: o pacote é consumido como fonte `.ts`, sem extensão nos imports.
+`allowImportingTsExtensions: false` is required: the package is consumed as `.ts`
+sources, imported without extension.
 
-## Próximos passos
+## Next
 
-- [HTTP](./http.md) — middlewares, CSRF, cookies
-- [Routing](./routing.md) — rotas nomeadas e params
-- [Database](./database.md) — `defineTable` sobre `Bun.sql`
-- [Auth](./auth.md) — senhas, tokens, guard
-- [Session](./session.md) — cookie assinado ou Redis
-- [Frontend stacks](./frontend-stacks.md) — HTMX, React, API-only
+- [Routing](./routing.md) — `pages/`, params, catch-all
+- [HTTP](./http.md) — `HttpContext`, middleware, CSRF, cookies
+- [Database](./database.md) — `defineTable` over `Bun.sql`
+- [Validation](./validation.md) — Standard Schema adapter
+- [Auth](./auth.md) — passwords, tokens, guard
+- [Session](./session.md) — signed cookie or Redis
+- [Frontend stacks](./frontend-stacks.md) — HTMX, React, Vue, API-only
+- [CLI](./cli.md) — `alfa` commands
+- [Deployment](./deployment.md) — compiled binary, Docker
 
 ---
 
@@ -273,6 +230,7 @@ import type { HttpContext } from "alfa/http";
 interface HttpContext {
   readonly req: Request;
   params: Record<string, string>;   // path params (/users/:id)
+  query: Record<string, string>;    // query string (?page=2)
   cookies: Bun.CookieMap;           // cookies do request
   [key: string]: unknown;           // bag: session, user, csrfToken...
 }
@@ -383,118 +341,106 @@ const ctx: HttpContext = {
 
 # Routing
 
-Rotas declaradas em código (não por convenção de arquivo), com nomes e params tipados.
+`alfa` uses **file-system routing**, delegated to Bun's native
+[`Bun.FileSystemRouter`](https://bun.com/docs/runtime/file-system-router)
+(Next.js `pages/` conventions). There is no custom matcher and no named-route registry.
 
-## Registrar rotas
+## The `pages/` directory
 
-```ts
-import { createRouter } from "alfa/routing";
-import { http } from "alfa/http";
-
-const router = createRouter();
-
-router
-  .get("/users", (ctx) => http.json({ users: [] }))
-  .name("users.index");
-
-router
-  .get("/users/:id", (ctx) => http.json({ id: ctx.params.id }))
-  .name("users.show");
-
-router
-  .post("/users", async (ctx) => http.json(await ctx.req.json(), { status: 201 }))
-  .name("users.create");
+```
+pages/
+├── index.ts                 # /
+├── about.ts                 # /about
+├── blog/
+│   ├── index.ts             # /blog
+│   └── [slug].ts            # /blog/:slug
+├── docs/[[...slug]].ts      # /docs, /docs/a, /docs/a/b
+└── api/
+    ├── health.ts            # /api/health
+    └── users/[id].ts        # /api/users/:id
 ```
 
-Métodos disponíveis: `get`, `post`, `put`, `patch`, `delete`, `options`, `head`. Todos retornam `{ name() }`, então `.name()` encadeia.
+| File | URL |
+|---|---|
+| `pages/index.ts` | `/` |
+| `pages/about.ts` | `/about` |
+| `pages/blog/index.ts` | `/blog` |
+| `pages/blog/[slug].ts` | `/blog/:slug` |
+| `pages/shop/[...slug].ts` | `/shop/a`, `/shop/a/b` |
+| `pages/docs/[[...slug]].ts` | `/docs`, `/docs/a`, `/docs/a/b` |
 
-## Path params
+Params are read from the file name and exposed as `ctx.params` (a
+`Record<string, string>`). The optional catch-all joins the path into one param
+(`/docs/a/b` → `params.slug === "a/b"`).
 
-`:nome` captura um segmento e injeta em `ctx.params`:
+## A page
 
 ```ts
-router.get("/posts/:postId/comments/:commentId", (ctx) =>
-  http.json({ post: ctx.params.postId, comment: ctx.params.commentId }),
-);
+// pages/index.ts
+export default () => "<h1>home</h1>";
 ```
 
-Valores são decodificados com `decodeURIComponent`. Asterisco/curly não são especiais.
-
-## Rotas nomeadas
-
-`.name("x")` registra o par nome → `{ path, method }`. O `route()` monta a URL:
+Returning a `string` sends `text/html`. Returning a `Response` is passed through
+untouched:
 
 ```ts
-import { route } from "alfa/routing";
+// pages/api/users/[id].ts
+import type { HttpContext } from "alfa/http";
 
-route("users.index");                     // "/users"
-route("users.show", { id: 42 });          // "/users/42"
+export default (ctx: HttpContext) => Response.json({ id: ctx.params.id });
 ```
 
-`route()` lança `Unknown route` para nome inexistente e `Missing route param: <key>` quando falta argumento.
-
-Para type-safety real, declare as rotas por augmenting:
+## Context
 
 ```ts
-declare module "alfa/routing" {
-  interface RouteRegistryPaths {
-    "users.index": "/users";
-    "users.show": "/users/:id";
-  }
+interface HttpContext {
+  readonly req: Request;
+  params: Record<string, string>;   // path params
+  query: Record<string, string>;    // ?a=1
+  cookies: Bun.CookieMap;
+  [key: string]: unknown;           // middleware bag
 }
 ```
 
-Com isso `RouteName`, `RouteParamsFor<Name>` e o segundo argumento de `route()` passam a ser checados pelo compilador.
-
-## Integrar com o app
+## The app
 
 ```ts
 import { defineApp } from "alfa";
 
-const app = defineApp({ routes: (router) => registerRoutes(router) });
-app.listen(3000);
+defineApp().listen(3000);
 ```
 
-`app.fetch` é compatível com `Bun.serve` e devolve `404` quando nada casa. Para customizar:
+`defineApp({ dir })` scans `dir` (default `./pages`). `defineApp({ publicDir })`
+also serves a static directory at `/public/*` via Bun's directory routes.
 
 ```ts
-const app = defineApp({
-  routes: registerRoutes,
-  notFound: () => http.json({ error: "not found" }, { status: 404 }),
-});
+const app = defineApp({ dir: "pages", publicDir: "public" });
+
+app.router.routes;   // Record<pattern, filePath>, from Bun
+app.reload();        // re-scan pages/ (useful under bun --hot)
+await app.fetch(new Request("http://localhost/blog/x"));
 ```
 
-## Helpers
+## Errors
 
-```ts
-import { defineRoutes, routeNames } from "alfa/routing";
+A handler that throws is handled by `Bun.serve({ error })` — `alfa` registers a
+default `500` responder and never wraps handlers in `try/catch`.
 
-const router = defineRoutes(createRouter(), (r) => {
-  r.get("/ping", () => new Response("pong")).name("ping");
-});
+## Development
 
-routeNames(); // ["ping"]
+```bash
+bun --watch index.ts     # hard restart; re-scans pages/
 ```
 
-## Composição
+`bun --hot index.ts` soft-reloads; call `app.reload()` to pick up new files in
+`pages/`.
 
-```ts
-const web = createRouter();
-const api = createRouter();
+## Not included
 
-api.get("/health", () => http.json({ ok: true })).name("health");
-
-const router = createRouter();
-// registre as de api dentro de web conforme precisar
-for (const def of api.routes) web.routes.push(def);
-```
-
-`Router.routes` é um array público, então composição é direta.
-
-## Regras
-
-- Rotas são registradas por código; não há file-system routing no core (para React, use `Bun.FileSystemRouter` — veja [frontend-stacks](./frontend-stacks.md)).
-- O matcher é linear sobre `routes`, em ordem de registro. Para alto volume, prefira `Bun.serve({ routes })` com handlers estáticos.
+`layout`, `error`, `not-found`, `loading`, route groups `(x)`, private folders
+`_x`, parallel slots `@slot` and intercepting routes are **App Router** features.
+Bun's router does not implement them and `alfa` does not reimplement them. A
+route file is self-contained.
 
 ---
 
@@ -868,202 +814,202 @@ Ambas satisfazem o mesmo contrato, então trocar é uma linha.
 
 # Frontend stacks
 
-`alfa` não impõe engine de template nem framework de frontend. O framework entrega o servidor e deixa a escolha de stack para você — a mesma abordagem do AdonisJS.
+`alfa` ships no template engine and no view package. The server is yours; pick a
+frontend approach. Escaping is a render-layer concern — use
+[`Bun.escapeHTML()`](https://bun.com/reference/bun/escapeHTML) when you build HTML
+strings by hand.
 
-## Resumo
+## Options
 
-| Stack | Quando usar | Como |
+| Stack | Best for | How |
 |---|---|---|
-| **HTMX + Alpine** (padrão) | SSR leve, formulários, admin | `pages/*.html` + `<script>` CDN |
-| **React (Bun fullstack)** | SPA/streaming, React ecosystem | `pages/*.tsx` + `Bun.FileSystemRouter` |
-| **API-only** | Backend consumindo SPA separada | `Response.json` + `fetch` no cliente |
+| **HTMX + Alpine** | server-driven pages, forms, admin | `pages/*.ts` returning HTML strings |
+| **React (Bun fullstack)** | client-rendered SPA | Bun HTML import bundles `*.tsx` |
+| **Vue (Bun fullstack)** | client-rendered SPA | Bun HTML import bundles `*.ts` |
+| **API-only** | separate frontend | `Response.json` routes |
 
-Não existe pacote de views no core. TSX é escolha do usuário; `alfa` não tem `@alfa/view`.
+There is no server-side component model, no RSC, no Inertia.
 
 ---
 
-## HTMX + Alpine (padrão)
+## HTMX + Alpine
 
-```html
-<!-- pages/index.html -->
-<!doctype html>
-<html lang="pt-BR">
+```ts
+// pages/index.ts
+export default () => `<!doctype html>
+<html>
   <head>
-    <meta charset="utf-8" />
-    <title>app</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script defer src="https://unpkg.com/alpinejs@3.14.7/dist/cdn.min.js"></script>
   </head>
   <body>
     <main x-data="{ count: 0 }">
-      <h1>app</h1>
-      <button type="button" x-on:click="count++">
-        count: <span x-text="count"></span>
-      </button>
-      <section hx-get="/api/stats" hx-trigger="load" hx-target="#stats"></section>
-      <div id="stats"></div>
+      <button type="button" x-on:click="count++">count: <span x-text="count"></span></button>
+      <button type="button" hx-get="/api/health" hx-target="#out">call API</button>
+      <pre id="out"></pre>
     </main>
   </body>
-</html>
+</html>`;
 ```
-
-Handler no servidor:
 
 ```ts
-router.get("/api/stats", () => http.json({ users: 12 }));
+// pages/api/health.ts
+export default () => Response.json({ ok: true });
 ```
 
-Sem bundler, sem build step. O Bun serve o HTML estático.
+No bundler, no extra dependencies. Bun serves the HTML string directly.
+
+**Escaping:** HTMX does not escape — it swaps server HTML. When you interpolate
+user data into a string, call `Bun.escapeHTML(value)`. Alpine's `x-text` writes via
+`textContent` (escapes); `x-html` does not.
 
 ---
 
-## React com Bun fullstack
+## React (Bun fullstack)
 
-O Bun faz bundle de `.tsx` nativamente e resolve `pages/` via `Bun.FileSystemRouter`.
+Bun bundles `*.tsx` and serves the result through an HTML import:
+
+```html
+<!-- index.html -->
+<!doctype html>
+<div id="root"></div>
+<script type="module" src="./src/app.tsx"></script>
+```
 
 ```tsx
-// pages/index.tsx
-export default function Home() {
-  return <main><h1>alfa + React</h1></main>;
+// src/app.tsx
+import { useState } from "react";
+import { createRoot } from "react-dom/client";
+
+function App() {
+  const [count, setCount] = useState(0);
+  return <button type="button" onClick={() => setCount((c) => c + 1)}>count: {count}</button>;
 }
+
+const root = document.getElementById("root");
+if (root) createRoot(root).render(<App />);
 ```
 
 ```ts
-// index.tsx
-import { FileSystemRouter } from "bun";
-import home from "./pages/index.html"; // Bun empacota TSX em dev
+// index.ts — Bun serves the page; alfa serves the API
+import { defineApp } from "alfa";
+import html from "./index.html";
 
-const pages = new FileSystemRouter({
-  dir: `${import.meta.dir}/pages`,
-  style: "nextjs",
-});
+const api = defineApp({ dir: `${import.meta.dir}/pages` });
 
-Bun.serve({
-  routes: {
-    "/api/health": new Response(JSON.stringify({ ok: true }), {
-      headers: { "content-type": "application/json" },
-    }),
-  },
-  fetch(req) {
-    const match = pages.match(new URL(req.url));
-    return match ? new Response(Bun.file(match.filePath)) : new Response("404", { status: 404 });
-  },
-});
+Bun.serve({ port: 3000, development: true, routes: { "/": html }, fetch: api.fetch });
 ```
 
-Em produção, `bun build --target=bun` gera o manifest estático e o `Bun.serve` serve os assets sem bundling em runtime.
+See [`examples/react-fullstack`](https://github.com/nino-ts/alfa/tree/main/examples/react-fullstack).
 
-Exemplo completo: [`examples/react-fullstack`](https://github.com/nino-ts/alfa/tree/main/examples/react-fullstack).
+---
+
+## Vue (Bun fullstack)
+
+Same idea. This example uses Vue's render function (no Single-File Component, so
+no bundler plugin is needed):
+
+```ts
+// src/app.ts
+import { createApp, h, ref } from "vue";
+
+createApp({
+  setup() {
+    const count = ref(0);
+    return () => h("main", [h("h1", "alfa + Vue"), h("button", { type: "button", onClick: () => (count.value += 1) }, `count: ${count.value}`)]);
+  },
+}).mount("#root");
+```
+
+See [`examples/vue`](https://github.com/nino-ts/alfa/tree/main/examples/vue).
+Single-File Components (`.vue`) would need a Bun plugin; that is out of scope.
 
 ---
 
 ## API-only
 
 ```ts
-router.get("/api/users", async () => {
-  const users = usersTable.select();
-  return http.json(await users.get());
-});
+// pages/api/users.ts
+import type { HttpContext } from "alfa/http";
+
+export default async (ctx: HttpContext) => {
+  const rows = await db`SELECT id, name FROM users`;
+  return Response.json(rows);
+};
 ```
 
-Consumido por uma SPA separada via `fetch`. Sem acoplamento do frontend ao servidor.
+Consume it from any separate frontend.
 
 ---
 
-## Inertia / outras stacks
+## Escaping summary
 
-`alfa` não empacota Inertia nem adapters de deploy. Trate como integração externa: registre o middleware do Inertia manualmente em `compose()`.
+| Layer | Escapes? |
+|---|---|
+| React / JSX | yes |
+| Vue | yes (interpolation) |
+| Alpine `x-text` | yes |
+| Alpine `x-html` | no |
+| HTMX | no (server builds the HTML) |
+| Hand-built HTML string | use `Bun.escapeHTML()` |
 
-## Resumo de regras
-
-- O diretório de páginas é **`pages/`**.
-- Não existe `views/` nem `app/` no core.
-- `alfa` não possui engine de template; use HTML estático, TSX ou o que o Bun suportar nativamente.
+`alfa` exposes no `escapeHtml` helper — `Bun.escapeHTML` already exists and is
+optimized (480 MB/s–20 GB/s).
 
 ---
 
 # CLI
 
-O binário `alfa` acompanha o pacote `alfa`.
+The `alfa` binary ships with the `alfa` package.
 
 ```bash
-bunx alfa            # lista os comandos
-bunx alfa serve      # roda o app
-bunx alfa dev        # roda com hot reload
-bunx alfa migrate    # aplica migrations
+bunx alfa            # list commands
+bunx alfa migrate    # apply migrations
+bunx alfa make:page blog/[slug]
+bunx alfa make:migration create_users
 ```
 
-## Comandos
+`serve` and `dev` are intentionally absent: run the entry directly with Bun.
 
-### `alfa serve`
+| Task | Command |
+|---|---|
+| dev server | `bun --watch index.ts` |
+| production | `bun index.ts` |
+| run migrations | `bunx alfa migrate` |
+| scaffold a route | `bunx alfa make:page <path>` |
+| scaffold a migration | `bunx alfa make:migration <name>` |
 
-Executa o entrypoint (`index.ts` por padrão) com Bun.
+## `alfa migrate`
 
-```bash
-bunx alfa serve
-```
+Applies `*.sql` files from `database/migrations/` in order, each in its own
+transaction. Reads `DATABASE_URL` via `new SQL()`.
 
-Para outro entrypoint, chame direto:
+## `alfa make:page <path>`
 
-```bash
-bun run src/server.ts
-```
-
-### `alfa dev`
-
-Igual a `serve`, com `--hot` para recarregar o servidor ao editar arquivos.
-
-```bash
-bunx alfa dev
-```
-
-### `alfa migrate`
-
-Aplica os arquivos `*.sql` de `database/migrations/` em ordem, cada um em transação própria.
+Creates `pages/<path>.ts`:
 
 ```bash
-bunx alfa migrate
-# Applied 3 migration(s)
-```
-
-Usa `DATABASE_URL` do ambiente via `new SQL()`.
-
-### `alfa make:controller <Name>`
-
-Cria `app/controllers/<Name>Controller.ts`.
-
-```bash
-bunx alfa make:controller User
+bunx alfa make:page blog/[slug]
+# Created pages/blog/[slug].ts
 ```
 
 ```ts
 import type { HttpContext } from "alfa/http";
 
-export class UserController {
-  async index(ctx: HttpContext): Promise<Response> {
-    return new Response("UserController#index");
-  }
-}
+export default (ctx: HttpContext) => "TODO: blog/[slug]";
 ```
 
-### `alfa make:migration <nome>`
+## `alfa make:migration <name>`
 
-Cria `database/migrations/<timestamp>_<nome>.sql`.
+Creates `database/migrations/<timestamp>_<name>.sql`.
 
-```bash
-bunx alfa make:migration create_users_table
-# Created database/migrations/20261008090000_create_users_table.sql
-```
-
-## Kernel próprio
-
-O kernel é a mesma API usada internamente:
+## Custom kernel
 
 ```ts
 import { createKernel, registerDefaultCommands } from "alfa/console";
 
 const kernel = registerDefaultCommands(createKernel(), {
-  entry: "src/server.ts",
+  pagesDir: "pages",
   migrationsDir: "db/migrations",
 });
 
@@ -1079,148 +1025,8 @@ kernel.command({
 process.exit(await kernel.run(process.argv.slice(2)));
 ```
 
-Um `run` retorna o código de saída (0 sucesso, 1 erro), o que torna o kernel fácil de testar.
-
----
-
-# Container
-
-IoC mínimo para registrar e resolver serviços. Sem decorators, sem metadata reflection, sem service location implícito.
-
-## Registrar e resolver
-
-```ts
-import { createContainer } from "alfa/container";
-
-const container = createContainer();
-
-container.register("db", () => new SQL(process.env.DATABASE_URL!));
-container.register("users", (c) => new UserRepository(await c.make("db")), {
-  singleton: true,
-});
-
-const repo = await container.make<UserRepository>("users");
-```
-
-A factory recebe o próprio container, permitindo resolver dependências em cascata:
-
-```ts
-container.register("service", async (c) => {
-  const db = await c.make<SQL>("db");
-  const mail = await c.make<Mailer>("mail");
-  return new UserService(db, mail);
-});
-```
-
-## Opções
-
-| Opção | Padrão | Efeito |
-|---|---|---|
-| `singleton` | `true` | Instância única é memorizada após a primeira resolução |
-| `eager` | `false` | Resolve e chama `boot()` durante `container.boot()` |
-
-Com `singleton: false`, cada `make` cria uma instância nova — útil para requests.
-
-```ts
-container.register("ctx", (c) => buildRequestContext(), { singleton: false });
-```
-
-## Lifecycle
-
-```ts
-await container.boot();
-```
-
-`boot()` é idempotente. Para cada binding `eager`, resolve a instância e, se ela tiver um método `boot()`, chama. Isso permite que serviços (pool de conexões, migrations, workers) se inicializem na partida.
-
-```ts
-container.register(
-  "migrations",
-  async (c) => new Migrator(await c.make<SQL>("db")),
-  { eager: true },
-);
-```
-
-## Erros
-
-`make` lança `Nothing registered for key: <key>` quando não há binding. Falha explícita é intencional: prefira importar o serviço diretamente quando possível e usar o container apenas para casos transversais (DB, mailer, config compartilhada).
-
-## No app
-
-```ts
-import { defineApp } from "alfa";
-
-const app = defineApp({
-  routes: registerRoutes,
-});
-
-app.container.register("clock", () => Date.now);
-await app.container.boot();
-```
-
-## Regras
-
-- Bindings são resolvidos por chave de string, não por token de tipo. Use `as` no ponto de consumo para manter a tipagem.
-- O container não injeta em construtor automaticamente; chame `make` explicitamente.
-- Não use o container para evitar imports: ele serve para o grafo de dependências da aplicação, não para MEDIA de imports.
-
----
-
-# Utils
-
-Helpers pequenos que o Bun não oferece como primitivas. Est Deliberadamente curto: o resto deve ser JavaScript nativo (`map`, `filter`, `structuredClone`, `URLPattern`, `Intl`).
-
-## escapeHtml
-
-```ts
-import { escapeHtml } from "alfa/utils";
-
-escapeHtml('<script>alert("x")</script>');
-// &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;
-```
-
-Escapa `&`, `<`, `>`, `"` e `'`. Use ao interpolar dado do usuário em HTML construído por template string.
-
-Com TSX/JSX o escape é do próprio React — `escapeHtml` é para templates `.html` escritos à mão (stack HTMX).
-
-## slugify
-
-```ts
-import { slugify } from "alfa/utils";
-
-slugify("Ação & Reação"); // "acao-reacao"
-slugify("  Olá, Mundo!  "); // "ola-mundo"
-```
-
-Remove diacríticos (normalização NFD), passa a minúsculas, troca separadores por hífen e remove hífens das pontas.
-
-## assert
-
-```ts
-import { assert } from "alfa/utils";
-
-const port = Number(process.env.PORT);
-assert(port > 0, "PORT must be positive");
-```
-
-`asserts value` do TypeScript: após a chamada, o valor é estreitado no escopo, sem `!` ou cast.
-
-## toJson
-
-```ts
-import { toJson } from "alfa/utils";
-
-toJson({ a: 1 });      // '{"a":1}'
-toJson(undefined);     // "null"
-toJson(data, 2);       // formatado com 2 espaços
-```
-
-`toJson` normaliza `undefined` para `null`, evitando omissão acidental de campo em logs.
-
-## Regras
-
-- Prefira JavaScript nativo antes de adicionar helper: `Object.fromEntries`, `Array.prototype.at`, `String.replaceAll` cobrem a maioria dos casos.
-- `escapeHtml` não substitui CSP nem sanitização de HTML rico. Para HTML vindo de usuário, use uma lib de sanitização dedicada.
+A command returns its exit code (`0` success, `1` error), which keeps the kernel
+easy to test.
 
 ---
 

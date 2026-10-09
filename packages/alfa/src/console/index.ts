@@ -1,8 +1,11 @@
 /**
- * Command kernel: serve, dev, migrate, make:controller, make:migration.
- * Bun-native process spawning via Bun.spawn, file output via Bun.write.
+ * Command kernel. Kept intentionally small:
+ * `migrate`, `make:page`, `make:migration`.
+ *
+ * `serve`/`dev` were removed — `bun run` and `bun --watch` already do that.
  */
 
+import { dirname } from "node:path";
 import { migrate } from "../database/index";
 
 export interface CommandContext {
@@ -52,19 +55,9 @@ export function createKernel(): Kernel {
   };
 }
 
-async function spawn(command: string[], cwd: string): Promise<number> {
-  const proc = Bun.spawn(command, {
-    cwd,
-    stdout: "inherit",
-    stderr: "inherit",
-    stdin: "inherit",
-  });
-  return proc.exited;
-}
-
 export interface DefaultCommandsOptions {
-  /** Entry file for serve/dev. Default "index.ts". */
-  entry?: string;
+  /** Pages directory. Default "pages". */
+  pagesDir?: string;
   /** Migrations directory. Default "database/migrations". */
   migrationsDir?: string;
 }
@@ -73,20 +66,6 @@ export function registerDefaultCommands(
   kernel: Kernel,
   options: DefaultCommandsOptions = {},
 ): Kernel {
-  const entry = options.entry ?? "index.ts";
-
-  kernel.command({
-    name: "serve",
-    description: "Start the app with Bun",
-    run: () => spawn([process.execPath, "run", entry], process.cwd()),
-  });
-
-  kernel.command({
-    name: "dev",
-    description: "Start the app with Bun --hot reload",
-    run: () => spawn([process.execPath, "--hot", "run", entry], process.cwd()),
-  });
-
   kernel.command({
     name: "migrate",
     description: "Run database migrations",
@@ -108,33 +87,33 @@ export function registerDefaultCommands(
   });
 
   kernel.command({
-    name: "make:controller",
-    description: "Scaffold a controller stub: make:controller Name",
+    name: "make:page",
+    description: "Scaffold a route: make:page <path> (e.g. blog/[slug])",
     run: async ({ args, cwd }) => {
       const name = args[0];
       if (!name) {
-        console.error("Usage: make:controller <Name>");
+        console.error("Usage: make:page <path>");
         return 1;
       }
-      const path = `${cwd}/app/controllers/${name}Controller.ts`;
-      const exists = await Bun.file(path).exists();
-      if (exists) {
-        console.error(`Already exists: ${path}`);
+      const pagesDir = options.pagesDir ?? `${cwd}/pages`;
+      const target = `${pagesDir}/${name}.ts`;
+      if (await Bun.file(target).exists()) {
+        console.error(`Already exists: ${target}`);
         return 1;
       }
-      await Bun.$`mkdir -p ${`${cwd}/app/controllers`}`.quiet();
+      await Bun.$`mkdir -p ${dirname(target)}`.quiet();
       await Bun.write(
-        path,
-        `import type { HttpContext } from "alfa/http";\n\nexport class ${name}Controller {\n  async index(ctx: HttpContext): Promise<Response> {\n    return new Response("${name}Controller#index");\n  }\n}\n`,
+        target,
+        `import type { HttpContext } from "alfa/http";\n\nexport default (ctx: HttpContext) => "TODO: ${name}";\n`,
       );
-      console.log(`Created ${path}`);
+      console.log(`Created ${target}`);
       return 0;
     },
   });
 
   kernel.command({
     name: "make:migration",
-    description: "Scaffold a migration stub: make:migration <name>",
+    description: "Scaffold a migration: make:migration <name>",
     run: async ({ args, cwd }) => {
       const name = args[0];
       if (!name) {
@@ -143,12 +122,13 @@ export function registerDefaultCommands(
       }
       const dir = options.migrationsDir ?? `${cwd}/database/migrations`;
       await Bun.$`mkdir -p ${dir}`.quiet();
-      const path = `${dir}/${new Date()
+      const stamp = new Date()
         .toISOString()
         .replace(/[-:T.Z]/g, "")
-        .slice(0, 14)}_${name}.sql`;
-      await Bun.write(path, `-- ${name}\n`);
-      console.log(`Created ${path}`);
+        .slice(0, 14);
+      const target = `${dir}/${stamp}_${name}.sql`;
+      await Bun.write(target, `-- ${name}\n`);
+      console.log(`Created ${target}`);
       return 0;
     },
   });

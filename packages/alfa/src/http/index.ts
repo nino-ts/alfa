@@ -7,6 +7,8 @@ export interface HttpContext {
   readonly req: Request;
   /** Path params extracted by the router (`/users/:id` → ctx.params.id). */
   params: Record<string, string>;
+  /** Query-string values (`?page=2` → ctx.query.page). */
+  query: Record<string, string>;
   /** Parsed request cookies. */
   cookies: Bun.CookieMap;
   /** Middleware-extensible bag (session, user, csrfToken, ...). */

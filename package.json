@@ -15,9 +15,7 @@
     "#alfa/validation": "./packages/alfa/src/validation/index.ts",
     "#alfa/session": "./packages/alfa/src/session/index.ts",
     "#alfa/auth": "./packages/alfa/src/auth/index.ts",
-    "#alfa/container": "./packages/alfa/src/container/index.ts",
-    "#alfa/console": "./packages/alfa/src/console/index.ts",
-    "#alfa/utils": "./packages/alfa/src/utils/index.ts"
+    "#alfa/console": "./packages/alfa/src/console/index.ts"
   },
   "scripts": {
     "test": "bun test",

@@ -1,85 +1,55 @@
 # CLI
 
-O binário `alfa` acompanha o pacote `alfa`.
+The `alfa` binary ships with the `alfa` package.
 
 ```bash
-bunx alfa            # lista os comandos
-bunx alfa serve      # roda o app
-bunx alfa dev        # roda com hot reload
-bunx alfa migrate    # aplica migrations
+bunx alfa            # list commands
+bunx alfa migrate    # apply migrations
+bunx alfa make:page blog/[slug]
+bunx alfa make:migration create_users
 ```
 
-## Comandos
+`serve` and `dev` are intentionally absent: run the entry directly with Bun.
 
-### `alfa serve`
+| Task | Command |
+|---|---|
+| dev server | `bun --watch index.ts` |
+| production | `bun index.ts` |
+| run migrations | `bunx alfa migrate` |
+| scaffold a route | `bunx alfa make:page <path>` |
+| scaffold a migration | `bunx alfa make:migration <name>` |
 
-Executa o entrypoint (`index.ts` por padrão) com Bun.
+## `alfa migrate`
 
-```bash
-bunx alfa serve
-```
+Applies `*.sql` files from `database/migrations/` in order, each in its own
+transaction. Reads `DATABASE_URL` via `new SQL()`.
 
-Para outro entrypoint, chame direto:
+## `alfa make:page <path>`
 
-```bash
-bun run src/server.ts
-```
-
-### `alfa dev`
-
-Igual a `serve`, com `--hot` para recarregar o servidor ao editar arquivos.
-
-```bash
-bunx alfa dev
-```
-
-### `alfa migrate`
-
-Aplica os arquivos `*.sql` de `database/migrations/` em ordem, cada um em transação própria.
+Creates `pages/<path>.ts`:
 
 ```bash
-bunx alfa migrate
-# Applied 3 migration(s)
-```
-
-Usa `DATABASE_URL` do ambiente via `new SQL()`.
-
-### `alfa make:controller <Name>`
-
-Cria `app/controllers/<Name>Controller.ts`.
-
-```bash
-bunx alfa make:controller User
+bunx alfa make:page blog/[slug]
+# Created pages/blog/[slug].ts
 ```
 
 ```ts
 import type { HttpContext } from "alfa/http";
 
-export class UserController {
-  async index(ctx: HttpContext): Promise<Response> {
-    return new Response("UserController#index");
-  }
-}
+export default (ctx: HttpContext) => "TODO: blog/[slug]";
 ```
 
-### `alfa make:migration <nome>`
+## `alfa make:migration <name>`
 
-Cria `database/migrations/<timestamp>_<nome>.sql`.
+Creates `database/migrations/<timestamp>_<name>.sql`.
 
-```bash
-bunx alfa make:migration create_users_table
-# Created database/migrations/20261008090000_create_users_table.sql
-```
-
-## Kernel próprio
-
-O kernel é a mesma API usada internamente:
+## Custom kernel
 
 ```ts
 import { createKernel, registerDefaultCommands } from "alfa/console";
 
 const kernel = registerDefaultCommands(createKernel(), {
-  entry: "src/server.ts",
+  pagesDir: "pages",
   migrationsDir: "db/migrations",
 });
 
@@ -95,4 +65,5 @@ kernel.command({
 process.exit(await kernel.run(process.argv.slice(2)));
 ```
 
-Um `run` retorna o código de saída (0 sucesso, 1 erro), o que torna o kernel fácil de testar.
+A command returns its exit code (`0` success, `1` error), which keeps the kernel
+easy to test.

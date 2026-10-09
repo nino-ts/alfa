@@ -1,78 +1,83 @@
 # alfa
 
-Framework backend **TypeScript 7** para **Bun**. Zero dependências de runtime fora das APIs nativas do Bun.
+TypeScript 7 backend framework for **Bun**. Zero runtime dependencies.
 
-## Repositório
+## Repository
 
-Este repo publica **apenas 2 pacotes** no npm:
+Publishes **2 packages** on npm (once the registry name is resolved):
 
-| Pacote | Papel | Status |
-|---|---|---|
-| [`alfa`](./packages/alfa) | Framework (bin `alfa` + módulos `alfa/*`) | ⏳ não publicado |
-| [`create-alfa`](./packages/create-alfa) | Scaffolder (`bunx create-alfa`) | ⏳ não publicado |
+| Package | Role |
+|---|---|
+| [`alfa`](./packages/alfa) | framework (bin `alfa` + `alfa/*` modules) |
+| [`create-alfa`](./packages/create-alfa) | scaffolder (`bunx create-alfa`) |
 
-> **Publicação no npm desativada.** O nome `alfa` está ocupado por um pacote de terceiro
-> (`alfa@0.7.0`, mantido por `lsm`, sem alterações desde 2022) e nenhum Trusted Publisher foi
-> configurado. O workflow de publish falha de propósito para impedir qualquer publicação
-> acidental. Até o nome ser resolvido, use `bun link` a partir do clone.
+> **npm publishing is disabled.** The unscoped name `alfa` is taken by a third
+> party (`alfa@0.7.0`, maintainer `lsm`, unchanged since 2022) and no Trusted
+> Publisher is configured. The publish workflow fails on purpose. Until this is
+> resolved, use the clone with `bun link`.
 
 ## Layout
 
 ```
 alfa/
 ├── packages/
-│   ├── alfa/              # publica "alfa"        → bin alfa, src/{http,routing,database,...}
-│   └── create-alfa/       # publica "create-alfa" → bin create-alfa
+│   ├── alfa/              # framework: bin alfa, src/{http,routing,database,validation,session,auth,console}
+│   └── create-alfa/       # scaffolder
 ├── templates/
-│   └── default/           # app base (HTMX/Alpine em pages/*.html)
+│   └── default/           # app base (pages/, HTMX + Alpine)
 ├── examples/
 │   ├── hypermedia/        # HTMX + Alpine
-│   └── react-fullstack/   # pages/*.tsx + Bun.FileSystemRouter
-├── docs/                  # guias de consumo + llms.txt
-├── .github/workflows/     # ci.yml + publish.yml (OIDC)
-└── package.json           # workspaces + import map #alfa/*
+│   ├── react-fullstack/   # React + Bun HTML import
+│   └── vue/               # Vue + Bun HTML import
+├── docs/                  # consumer docs + llms.txt
+├── .github/workflows/     # ci.yml (verify) + publish.yml (disabled)
+└── package.json           # workspaces + #alfa import map
 ```
 
-## Requisitos
+## Requirements
 
-- **Bun >= 1.4** (runtime + package manager). Node/npm/yarn/pnpm não suportados.
-- **TypeScript 7.x** (`peerDependencies`), fontes `.ts` servidas diretamente (`noEmit`).
+- **Bun >= 1.4** (runtime + package manager). Node.js, npm, yarn, pnpm are not supported.
+- **TypeScript 7.x** (`peerDependencies`), `.ts` sources served directly (`noEmit`).
 
-## Desenvolvimento local (sem publicar)
+## Local development (before publishing)
 
 ```bash
-# 1) instalar do workspace
 bun install
 
-# 2) linkar o framework globalmente (modo de desenvolvimento)
 cd packages/alfa && bun link
 cd ../create-alfa && bun link
 
-# 3) usar em um app
-cd /caminho/do/meu/app
+# in an app
 bun link alfa
-bun install
-bun run dev
+bun --watch index.ts
 ```
 
-Alternativa sem link global: `bun add link:/caminho/para/alfa/packages/alfa`.
+Without a global link: `bun add link:/path/to/alfa/packages/alfa`.
 
 ## Scripts
 
 ```bash
-bun test          # 61 testes
-bun run typecheck # tsc --noEmit
-bun run lint      # biome check
+bun run verify   # verify:docs + tsc --noEmit + bun test + biome check + llms-full gate
+bun test         # bun:test only
+bun run typecheck
+bun run lint
 ```
 
-## Convenções
+## Pillars
 
-- Import interno do monorepo: `#alfa` e `#alfa/<modulo>` (subpath imports, sem sub-subpaths).
-- API pública: `alfa` (barrel + `defineApp`) e `alfa/<modulo>`.
-- `views/` não existe: o diretório de páginas é `pages/`.
-- Zero `any`, zero suppressions (`biome-ignore`, `@ts-ignore`, `@ts-expect-error`).
-- Tudo que o Bun já oferece (`Bun.serve`, `Bun.sql`, `Bun.redis`, `Bun.password`, `Bun.CSRF`, `Bun.CookieMap`, `Bun.FileSystemRouter`) é usado direto — o framework não reimplementa.
+1. **Bun native** — every primitive is the Bun API.
+2. **Simplicity** — small surface, no build step, zero runtime deps.
+3. **Batteries included** — database (ORM), validation, auth, session, http, console.
+4. **Developer experience** — TypeScript 7, `llms.txt`, clear errors.
 
-## Licença
+## Conventions
+
+- Routing is file-system based in `pages/`, delegated to `Bun.FileSystemRouter`.
+- A route file `export default`s `(ctx) => Response | string`.
+- Internal monorepo imports use `#alfa` / `#alfa/<module>`; the public API is `alfa` / `alfa/<module>`.
+- No `container`, no `utils` module: use plain imports and Bun's native helpers.
+- Zero `any`, zero suppressions.
+
+## License
 
 MIT

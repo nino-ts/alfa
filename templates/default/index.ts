@@ -1,12 +1,3 @@
-import dashboardPage from "./pages/dashboard.html";
-import indexPage from "./pages/index.html";
+import { defineApp } from "alfa";
 
-Bun.serve({
-  routes: {
-    "/": indexPage,
-    "/dashboard": dashboardPage,
-  },
-  fetch() {
-    return new Response("Not Found", { status: 404 });
-  },
-});
+defineApp({ development: true }).listen(Number(process.env.PORT ?? 3000));

@@ -7,6 +7,7 @@ function ctxFor(req: Request): HttpContext {
   return {
     req,
     params: {},
+    query: {},
     cookies: new Bun.CookieMap(req.headers.get("cookie") ?? ""),
   };
 }

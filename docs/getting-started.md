@@ -1,129 +1,87 @@
 # Getting started
 
-## Requisitos
+## Requirements
 
-- **Bun >= 1.4** — runtime e package manager. Node.js, npm, yarn e pnpm não são suportados.
-- **TypeScript 7.x** —peer dependency; o framework publica fontes `.ts` e usa `noEmit`.
+- **Bun >= 1.4** — runtime and package manager. Node.js, npm, yarn and pnpm are not supported.
+- **TypeScript 7.x** — peer dependency; the framework publishes `.ts` sources (`noEmit`).
 
-## Criar um projeto
+## Status
 
-> **Status: ainda não publicado no npm.** Use o clone + `bun link` (ver
-> [Desenvolvimento local](#desenvolvimento-local-sem-publicar)).
+> **Not published to npm yet.** The name `alfa` is taken by a third party. Until
+> that is resolved, use the clone with `bun link`.
 
 ```bash
 git clone https://github.com/nino-ts/alfa
-cd alfa && bun install
+cd alfa
+bun install
 
 cd packages/alfa && bun link
 cd ../create-alfa && bun link
 ```
 
-Com template React:
+In your app:
 
 ```bash
-bunx create-alfa myapp --template react
+bunx create-alfa myapp
+cd myapp
+bun link alfa
+bun install
+bun --watch index.ts
 ```
 
-Adicionar a um projeto existente:
-
-```bash
-bun add link:/caminho/para/alfa/packages/alfa
-```
-
-Depois que a publicação for habilitada, `bun add alfa` e `bunx create-alfa` funcionarão
-diretamente.
-
-## Estrutura gerada
+## Project layout
 
 ```
 myapp/
-├── index.ts        # entry: defineApp + listen
-├── routes.ts       # registro de rotas
-├── pages/          # index.html (HTMX) ou index.tsx (React)
-├── package.json
-├── tsconfig.json
-└── .env.example
+├── index.ts            # defineApp().listen(...)
+├── pages/              # routes (file-system)
+│   ├── index.ts        # /
+│   └── api/health.ts   # /api/health
+└── package.json
 ```
 
-## App mínimo
+## Minimal app
 
 ```ts
 // index.ts
 import { defineApp } from "alfa";
-import { registerRoutes } from "./routes";
 
-const app = defineApp({ routes: registerRoutes });
-
-app.listen(Number(process.env.PORT ?? 3000));
+defineApp().listen(Number(process.env.PORT ?? 3000));
 ```
 
 ```ts
-// routes.ts
-import { http } from "alfa";
-import type { Router } from "alfa/routing";
-
-export function registerRoutes(router: Router): void {
-  router.get("/api/health", () => http.json({ ok: true })).name("health");
-}
+// pages/index.ts
+export default () => "<h1>Hello alfa</h1>";
 ```
 
-## Variáveis de ambiente
+```ts
+// pages/api/health.ts
+export default () => Response.json({ ok: true });
+```
+
+## Environment variables
 
 ```
 PORT=3000
-APP_SECRET=troque-me
+APP_SECRET=change-me
 DATABASE_URL=sqlite://app.db
 REDIS_URL=redis://localhost:6379
 ```
 
-O Bun carrega `.env` automaticamente. Use `--no-env-file` em produção quando as variáveis vierem do host.
+Bun loads `.env` automatically. Use `--no-env-file` when variables come from the host.
 
 ## Scripts
 
 ```json
 {
   "scripts": {
-    "dev": "alfa dev",
-    "serve": "alfa serve",
-    "migrate": "alfa migrate",
+    "dev": "bun --watch index.ts",
+    "start": "bun index.ts",
+    "migrate": "bunx alfa migrate",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   }
 }
-```
-
-## Desenvolvimento local (sem publicar)
-
-Como o framework ainda não está no npm, o fluxo de trabalho usa `bun link`:
-
-```bash
-# 1) no monorepo do alfa
-git clone https://github.com/nino-ts/alfa
-cd alfa
-bun install
-
-# 2) registra os pacotes globalmente
-cd packages/alfa && bun link
-cd ../create-alfa && bun link
-
-# 3) em um projeto novo
-bunx create-alfa myapp
-cd myapp
-bun link alfa
-bun install
-bun run dev
-```
-
-Sem link global, aponte direto para o caminho:
-
-```bash
-bun add link:/caminho/para/alfa/packages/alfa
-```
-
-Para desvincular:
-
-```bash
-bun unlink alfa
 ```
 
 ## tsconfig
@@ -147,13 +105,17 @@ bun unlink alfa
 }
 ```
 
-`allowImportingTsExtensions: false` é obrigatório: o pacote é consumido como fonte `.ts`, sem extensão nos imports.
+`allowImportingTsExtensions: false` is required: the package is consumed as `.ts`
+sources, imported without extension.
 
-## Próximos passos
+## Next
 
-- [HTTP](./http.md) — middlewares, CSRF, cookies
-- [Routing](./routing.md) — rotas nomeadas e params
-- [Database](./database.md) — `defineTable` sobre `Bun.sql`
-- [Auth](./auth.md) — senhas, tokens, guard
-- [Session](./session.md) — cookie assinado ou Redis
-- [Frontend stacks](./frontend-stacks.md) — HTMX, React, API-only
+- [Routing](./routing.md) — `pages/`, params, catch-all
+- [HTTP](./http.md) — `HttpContext`, middleware, CSRF, cookies
+- [Database](./database.md) — `defineTable` over `Bun.sql`
+- [Validation](./validation.md) — Standard Schema adapter
+- [Auth](./auth.md) — passwords, tokens, guard
+- [Session](./session.md) — signed cookie or Redis
+- [Frontend stacks](./frontend-stacks.md) — HTMX, React, Vue, API-only
+- [CLI](./cli.md) — `alfa` commands
+- [Deployment](./deployment.md) — compiled binary, Docker

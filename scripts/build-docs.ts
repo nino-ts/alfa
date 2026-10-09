@@ -15,8 +15,6 @@ const PAGES = [
   "session.md",
   "frontend-stacks.md",
   "cli.md",
-  "container.md",
-  "utils.md",
   "deployment.md",
 ] as const;
 

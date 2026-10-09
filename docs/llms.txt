@@ -1,39 +1,34 @@
-# alfa — documentação para agentes (LLMs)
+# alfa — documentation for agents (LLMs)
 
-> Índice de toda a documentação do `alfa`, framework backend TypeScript 7 para Bun.
-> Cada página também está disponível como Markdown puro.
+> Index of all `alfa` documentation. `alfa` is a TypeScript 7 backend framework for
+> [Bun](https://bun.com) with zero runtime dependencies. Routing is file-system based
+> (`pages/`), delegated to `Bun.FileSystemRouter`; everything else is the Bun-native API.
 
-## Sobre
+Full corpus in one file: [llms-full.txt](./llms-full.txt)
 
-`alfa` é um framework backend TypeScript para [Bun](https://bun.com). Zero dependências de runtime: usa `Bun.serve`, `Bun.sql`, `Bun.redis`, `Bun.password`, `Bun.CSRF`, `Bun.CookieMap` e `Bun.FileSystemRouter` diretamente.
+## Documentation
 
-Este arquivo indexa as páginas. Para o corpus completo em um único arquivo, veja [llms-full.txt](./llms-full.txt).
+- [Overview](https://github.com/nino-ts/alfa/blob/main/docs/index.md): pillars, install, quick start, requirements.
+- [Getting started](https://github.com/nino-ts/alfa/blob/main/docs/getting-started.md): install, minimal app, layout, scripts, tsconfig.
+- [HTTP](https://github.com/nino-ts/alfa/blob/main/docs/http.md): `HttpContext`, `compose`, response helpers, CSRF, cookies.
+- [Routing](https://github.com/nino-ts/alfa/blob/main/docs/routing.md): `pages/`, params, catch-all, `defineApp`, errors, dev.
+- [Database](https://github.com/nino-ts/alfa/blob/main/docs/database.md): `defineTable` over `Bun.sql`, migrations.
+- [Validation](https://github.com/nino-ts/alfa/blob/main/docs/validation.md): `StandardSchemaV1` adapter, `parse`, `parseBody`.
+- [Auth](https://github.com/nino-ts/alfa/blob/main/docs/auth.md): `Bun.password`, opaque tokens, `guard`.
+- [Session](https://github.com/nino-ts/alfa/blob/main/docs/session.md): `cookieSession` (HMAC), `redisSession`.
+- [Frontend stacks](https://github.com/nino-ts/alfa/blob/main/docs/frontend-stacks.md): HTMX/Alpine, React, Vue, API-only, escaping.
+- [CLI](https://github.com/nino-ts/alfa/blob/main/docs/cli.md): `migrate`, `make:page`, `make:migration`.
+- [Deployment](https://github.com/nino-ts/alfa/blob/main/docs/deployment.md): compiled binary, Docker, env.
 
-## Documentação
+## Sources
 
-- [Visão geral](https://github.com/nino-ts/alfa/blob/main/docs/index.md): o que é alfa, requisitos, início rápido, princípios.
-- [Getting started](https://github.com/nino-ts/alfa/blob/main/docs/getting-started.md): instalação, app mínimo, estrutura de pastas, scripts.
-- [HTTP](https://github.com/nino-ts/alfa/blob/main/docs/http.md): `HttpContext`, `compose`, helpers de resposta, middleware CSRF, cookies.
-- [Routing](https://github.com/nino-ts/alfa/blob/main/docs/routing.md): `Router`, path params, rotas nomeadas, `route()` tipado.
-- [Database](https://github.com/nino-ts/alfa/blob/main/docs/database.md): `defineTable` sobre `Bun.sql`, builder Drizzle-like, migrations.
-- [Validation](https://github.com/nino-ts/alfa/blob/main/docs/validation.md): adapter `StandardSchemaV1`, `parse`, `parseBody`.
-- [Auth](https://github.com/nino-ts/alfa/blob/main/docs/auth.md): `Bun.password` para senhas, tokens opacos, middleware `guard`.
-- [Session](https://github.com/nino-ts/alfa/blob/main/docs/session.md): `cookieSession` assinado com HMAC, `redisSession` via `Bun.RedisClient`.
-- [Frontend stacks](https://github.com/nino-ts/alfa/blob/main/docs/frontend-stacks.md): HTMX + Alpine (padrão), React com `Bun.FileSystemRouter`, API-only.
-- [CLI](https://github.com/nino-ts/alfa/blob/main/docs/cli.md): comandos `alfa serve|dev|migrate|make:*`.
-- [Container](https://github.com/nino-ts/alfa/blob/main/docs/container.md): IoC mínimo com `register`, `make` e lifecycle `boot`.
-- [Utils](https://github.com/nino-ts/alfa/blob/main/docs/utils.md): `escapeHtml`, `slugify`, `assert`, `toJson`.
-- [Deployment](https://github.com/nino-ts/alfa/blob/main/docs/deployment.md): binário compilado, Docker, variáveis de ambiente.
+- [Repository](https://github.com/nino-ts/alfa)
+- Packages `alfa` and `create-alfa` — **not published yet** (see the repo README)
+- Bun reference: [bun.com/reference](https://bun.com/reference) and [bun.com/docs](https://bun.com/docs)
 
-## Fontes
+## How to consume
 
-- [Repositório](https://github.com/nino-ts/alfa)
-- Pacotes npm: `alfa` e `create-alfa` — **ainda não publicados** (ver README do repo)
-- Referência Bun: [bun.com/docs](https://bun.com/docs) — todas as primitivas usadas pelo framework
-
-## Como consumir
-
-**Ainda não publicado no npm** (nome em disputa, sem Trusted Publisher). Use o clone:
+**Not on npm yet.** Use the clone:
 
 ```bash
 git clone https://github.com/nino-ts/alfa && cd alfa && bun install
@@ -41,21 +36,23 @@ cd packages/alfa && bun link
 ```
 
 ```ts
-import { defineApp, http } from "alfa";
-import type { Router } from "alfa/routing";
+import { defineApp } from "alfa";
 
-const app = defineApp({
-  routes: (router: Router) => {
-    router.get("/api/health", () => http.json({ ok: true })).name("health");
-  },
-});
-
-app.listen(3000);
+defineApp().listen(3000);
 ```
 
-## Convenções
+```ts
+// pages/index.ts
+export default () => "<h1>Hello alfa</h1>";
+```
 
-- Imports internos do monorepo usam `#alfa` e `#alfa/<módulo>`; a API pública usa `alfa` e `alfa/<módulo>` (sem sub-subpaths).
-- O diretório de páginas se chama `pages/` (não `views/` nem `app/`).
-- TypeScript 7.x, `noEmit`, zero `any`, zero suppressions.
-- Suporta apenas Bun (>= 1.4). Node.js, npm, yarn e pnpm não são suportados.
+## Conventions
+
+- Routes live in `pages/`: `index.ts` → `/`, `[param].ts`, `[...catchall].ts`, `[[...optionalCatchall]].ts`.
+- A route file `export default`s a handler `(ctx) => Response | string`.
+- No `layout`, `error`, `not-found`, route groups, parallel or intercepting routes:
+  Bun's router does not implement them and `alfa` does not reimplement them.
+- The framework exposes no `escapeHtml` helper — use `Bun.escapeHTML()`.
+- Tests use `bun:test` (`bun test`) only.
+- TypeScript 7, `noEmit`, zero `any`, zero suppressions.
+- Bun (>= 1.4) only. Node.js, npm, yarn and pnpm are not supported.

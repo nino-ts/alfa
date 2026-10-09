@@ -25,19 +25,29 @@ describe("console kernel", () => {
     expect(kernel.list().map((c) => c.name)).toEqual(["a"]);
   });
 
-  test("default commands are registered", () => {
+  test("default commands are migrate + make:page + make:migration", () => {
     const kernel = registerDefaultCommands(createKernel());
     const names = kernel.list().map((c) => c.name);
-    expect(names).toContain("serve");
-    expect(names).toContain("dev");
     expect(names).toContain("migrate");
-    expect(names).toContain("make:controller");
+    expect(names).toContain("make:page");
     expect(names).toContain("make:migration");
+    expect(names).not.toContain("serve");
+    expect(names).not.toContain("dev");
+    expect(names).not.toContain("make:controller");
   });
 
-  test("make:controller without name returns 1", async () => {
+  test("make:page without a path returns 1", async () => {
     const kernel = registerDefaultCommands(createKernel());
-    expect(await kernel.run(["make:controller"])).toBe(1);
+    expect(await kernel.run(["make:page"])).toBe(1);
+  });
+
+  test("make:page scaffolds a route file", async () => {
+    const dir = `${process.env.TEMP ?? process.env.TMP ?? "."}/alfa-test-pages-${Date.now()}`;
+    const kernel = registerDefaultCommands(createKernel(), { pagesDir: dir });
+    expect(await kernel.run(["make:page", "blog/[slug]"])).toBe(0);
+    const file = Bun.file(`${dir}/blog/[slug].ts`);
+    expect(await file.exists()).toBe(true);
+    expect(await file.text()).toContain("HttpContext");
   });
 
   test("make:migration scaffolds a sql file", async () => {

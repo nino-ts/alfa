@@ -1,59 +1,53 @@
-import { describe, expect, test } from "bun:test";
-import { text } from "#alfa/http";
-import { createRouter, defineRoutes, route, routeNames } from "#alfa/routing";
+import { expect, test } from "bun:test";
+import { join } from "node:path";
+import { defineApp } from "#alfa";
 
-describe("routing", () => {
-  test("registers and matches GET route", async () => {
-    const router = createRouter();
-    router.get("/", () => text("home"));
-    const res = await router.fetch(new Request("http://x/"));
-    expect(res.status).toBe(200);
-    expect(await res.text()).toBe("home");
-  });
+const dir = join(import.meta.dir, "__fixtures__", "pages");
 
-  test("matches path params and decodes them", async () => {
-    const router = createRouter();
-    router.get("/users/:id", (ctx) => text(`user ${ctx.params.id}`));
-    const res = await router.fetch(new Request("http://x/users/42"));
-    expect(await res.text()).toBe("user 42");
-  });
+function app() {
+  return defineApp({ dir });
+}
 
-  test("does not match wrong method or path", async () => {
-    const router = createRouter();
-    router.post("/users", () => text("created"));
-    expect(
-      (await router.fetch(new Request("http://x/users", { method: "POST" })))
-        .status,
-    ).toBe(200);
-    expect((await router.fetch(new Request("http://x/users"))).status).toBe(
-      404,
-    );
-    expect((await router.fetch(new Request("http://x/nope"))).status).toBe(404);
-  });
+test("serves a static page (/)", async () => {
+  const res = await app().fetch(new Request("http://localhost/"));
+  expect(res.status).toBe(200);
+  expect(res.headers.get("content-type")).toContain("text/html");
+  expect(await res.text()).toBe("<h1>home</h1>");
+});
 
-  test("named routes are registered and buildable via route()", async () => {
-    const router = createRouter();
-    defineRoutes(router, (r) => {
-      r.get("/users/:id", (ctx) => text(ctx.params.id ?? "")).name("user.show");
-      r.get("/about", () => text("about")).name("about");
-    });
-    expect(routeNames()).toContain("user.show");
-    expect(routeNames()).toContain("about");
-    expect(route("about" as never)).toBe("/about");
-    expect(route("user.show" as never, { id: 7 } as never)).toBe("/users/7");
-    const res = await router.fetch(new Request("http://x/users/9"));
-    expect(await res.text()).toBe("9");
-  });
+test("serves a dynamic page (/blog/:slug)", async () => {
+  const res = await app().fetch(
+    new Request("http://localhost/blog/hello-world"),
+  );
+  expect(res.status).toBe(200);
+  expect(await res.text()).toBe("post:hello-world");
+});
 
-  test("route() encodes params and throws on unknown/missing", () => {
-    const router = createRouter();
-    router.get("/posts/:slug", () => text("x")).name("post.show");
-    expect(route("post.show" as never, { slug: "hello world" } as never)).toBe(
-      "/posts/hello%20world",
-    );
-    expect(() => route("missing.name" as never)).toThrow("Unknown route");
-    expect(() => route("post.show" as never, {} as never)).toThrow(
-      "Missing route param",
-    );
-  });
+test("serves a JSON API route (/api/health)", async () => {
+  const res = await app().fetch(new Request("http://localhost/api/health"));
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({ ok: true });
+});
+
+test("exposes route params to the handler (/api/users/:id)", async () => {
+  const res = await app().fetch(new Request("http://localhost/api/users/42"));
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({ id: "42" });
+});
+
+test("serves an optional catch-all (/docs)", async () => {
+  const res = await app().fetch(new Request("http://localhost/docs"));
+  expect(res.status).toBe(200);
+  expect(await res.text()).toBe("docs:");
+});
+
+test("serves a nested optional catch-all (/docs/a/b/c)", async () => {
+  const res = await app().fetch(new Request("http://localhost/docs/a/b/c"));
+  expect(res.status).toBe(200);
+  expect(await res.text()).toBe("docs:a/b/c");
+});
+
+test("returns 404 for an unknown route", async () => {
+  const res = await app().fetch(new Request("http://localhost/nope"));
+  expect(res.status).toBe(404);
 });

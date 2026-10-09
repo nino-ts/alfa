@@ -10,6 +10,7 @@ import type { HttpContext } from "alfa/http";
 interface HttpContext {
   readonly req: Request;
   params: Record<string, string>;   // path params (/users/:id)
+  query: Record<string, string>;    // query string (?page=2)
   cookies: Bun.CookieMap;           // cookies do request
   [key: string]: unknown;           // bag: session, user, csrfToken...
 }

@@ -1,114 +1,102 @@
 # Routing
 
-Rotas declaradas em código (não por convenção de arquivo), com nomes e params tipados.
+`alfa` uses **file-system routing**, delegated to Bun's native
+[`Bun.FileSystemRouter`](https://bun.com/docs/runtime/file-system-router)
+(Next.js `pages/` conventions). There is no custom matcher and no named-route registry.
 
-## Registrar rotas
+## The `pages/` directory
 
-```ts
-import { createRouter } from "alfa/routing";
-import { http } from "alfa/http";
-
-const router = createRouter();
-
-router
-  .get("/users", (ctx) => http.json({ users: [] }))
-  .name("users.index");
-
-router
-  .get("/users/:id", (ctx) => http.json({ id: ctx.params.id }))
-  .name("users.show");
-
-router
-  .post("/users", async (ctx) => http.json(await ctx.req.json(), { status: 201 }))
-  .name("users.create");
+```
+pages/
+├── index.ts                 # /
+├── about.ts                 # /about
+├── blog/
+│   ├── index.ts             # /blog
+│   └── [slug].ts            # /blog/:slug
+├── docs/[[...slug]].ts      # /docs, /docs/a, /docs/a/b
+└── api/
+    ├── health.ts            # /api/health
+    └── users/[id].ts        # /api/users/:id
 ```
 
-Métodos disponíveis: `get`, `post`, `put`, `patch`, `delete`, `options`, `head`. Todos retornam `{ name() }`, então `.name()` encadeia.
+| File | URL |
+|---|---|
+| `pages/index.ts` | `/` |
+| `pages/about.ts` | `/about` |
+| `pages/blog/index.ts` | `/blog` |
+| `pages/blog/[slug].ts` | `/blog/:slug` |
+| `pages/shop/[...slug].ts` | `/shop/a`, `/shop/a/b` |
+| `pages/docs/[[...slug]].ts` | `/docs`, `/docs/a`, `/docs/a/b` |
 
-## Path params
+Params are read from the file name and exposed as `ctx.params` (a
+`Record<string, string>`). The optional catch-all joins the path into one param
+(`/docs/a/b` → `params.slug === "a/b"`).
 
-`:nome` captura um segmento e injeta em `ctx.params`:
+## A page
 
 ```ts
-router.get("/posts/:postId/comments/:commentId", (ctx) =>
-  http.json({ post: ctx.params.postId, comment: ctx.params.commentId }),
-);
+// pages/index.ts
+export default () => "<h1>home</h1>";
 ```
 
-Valores são decodificados com `decodeURIComponent`. Asterisco/curly não são especiais.
-
-## Rotas nomeadas
-
-`.name("x")` registra o par nome → `{ path, method }`. O `route()` monta a URL:
+Returning a `string` sends `text/html`. Returning a `Response` is passed through
+untouched:
 
 ```ts
-import { route } from "alfa/routing";
+// pages/api/users/[id].ts
+import type { HttpContext } from "alfa/http";
 
-route("users.index");                     // "/users"
-route("users.show", { id: 42 });          // "/users/42"
+export default (ctx: HttpContext) => Response.json({ id: ctx.params.id });
 ```
 
-`route()` lança `Unknown route` para nome inexistente e `Missing route param: <key>` quando falta argumento.
-
-Para type-safety real, declare as rotas por augmenting:
+## Context
 
 ```ts
-declare module "alfa/routing" {
-  interface RouteRegistryPaths {
-    "users.index": "/users";
-    "users.show": "/users/:id";
-  }
+interface HttpContext {
+  readonly req: Request;
+  params: Record<string, string>;   // path params
+  query: Record<string, string>;    // ?a=1
+  cookies: Bun.CookieMap;
+  [key: string]: unknown;           // middleware bag
 }
 ```
 
-Com isso `RouteName`, `RouteParamsFor<Name>` e o segundo argumento de `route()` passam a ser checados pelo compilador.
-
-## Integrar com o app
+## The app
 
 ```ts
 import { defineApp } from "alfa";
 
-const app = defineApp({ routes: (router) => registerRoutes(router) });
-app.listen(3000);
+defineApp().listen(3000);
 ```
 
-`app.fetch` é compatível com `Bun.serve` e devolve `404` quando nada casa. Para customizar:
+`defineApp({ dir })` scans `dir` (default `./pages`). `defineApp({ publicDir })`
+also serves a static directory at `/public/*` via Bun's directory routes.
 
 ```ts
-const app = defineApp({
-  routes: registerRoutes,
-  notFound: () => http.json({ error: "not found" }, { status: 404 }),
-});
+const app = defineApp({ dir: "pages", publicDir: "public" });
+
+app.router.routes;   // Record<pattern, filePath>, from Bun
+app.reload();        // re-scan pages/ (useful under bun --hot)
+await app.fetch(new Request("http://localhost/blog/x"));
 ```
 
-## Helpers
+## Errors
 
-```ts
-import { defineRoutes, routeNames } from "alfa/routing";
+A handler that throws is handled by `Bun.serve({ error })` — `alfa` registers a
+default `500` responder and never wraps handlers in `try/catch`.
 
-const router = defineRoutes(createRouter(), (r) => {
-  r.get("/ping", () => new Response("pong")).name("ping");
-});
+## Development
 
-routeNames(); // ["ping"]
+```bash
+bun --watch index.ts     # hard restart; re-scans pages/
 ```
 
-## Composição
+`bun --hot index.ts` soft-reloads; call `app.reload()` to pick up new files in
+`pages/`.
 
-```ts
-const web = createRouter();
-const api = createRouter();
+## Not included
 
-api.get("/health", () => http.json({ ok: true })).name("health");
-
-const router = createRouter();
-// registre as de api dentro de web conforme precisar
-for (const def of api.routes) web.routes.push(def);
-```
-
-`Router.routes` é um array público, então composição é direta.
-
-## Regras
-
-- Rotas são registradas por código; não há file-system routing no core (para React, use `Bun.FileSystemRouter` — veja [frontend-stacks](./frontend-stacks.md)).
-- O matcher é linear sobre `routes`, em ordem de registro. Para alto volume, prefira `Bun.serve({ routes })` com handlers estáticos.
+`layout`, `error`, `not-found`, `loading`, route groups `(x)`, private folders
+`_x`, parallel slots `@slot` and intercepting routes are **App Router** features.
+Bun's router does not implement them and `alfa` does not reimplement them. A
+route file is self-contained.
