@@ -1,8 +1,12 @@
 import { defineTable } from "alfa/database";
 import { SQL } from "bun";
 
-// Bun.SQL picks the driver from the URL: sqlite://, postgres://, mysql://.
-export const db = new SQL(process.env.DATABASE_URL ?? "sqlite://app.db");
+// Bun.SQL picks the driver from the URL: postgres://, mysql://, sqlite://.
+// Default matches examples/database/compose.yaml.
+export const db = new SQL(
+  process.env.DATABASE_URL ??
+    "postgres://postgres:postgres@localhost:5432/alfa",
+);
 
 export interface Post {
   id: number;

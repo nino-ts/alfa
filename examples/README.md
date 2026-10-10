@@ -12,7 +12,7 @@ adapted to alfa's file-system routing and Bun-native primitives.
 | [`api`](./api) | REST JSON API | `pages/api/items/index.ts`, `pages/api/items/[id].ts` |
 | [`auth`](./auth) | session middleware + passwords | `/login`, `/logout`, `/dashboard` |
 | [`forms`](./forms) | HTMX form + Standard Schema validation | `pages/contact.ts` |
-| [`database`](./database) | ORM over `Bun.sql` + migrations | `pages/api/posts/*` |
+| [`database`](./database) | ORM over `Bun.sql` + migrations (Postgres via `docker compose`) | `pages/api/posts/*` |
 | [`hypermedia`](./hypermedia) | HTMX + Alpine | `pages/index.ts` |
 | [`react-fullstack`](./react-fullstack) | React SPA bundled by Bun | `index.html` + `src/app.tsx` |
 | [`vue`](./vue) | Vue SPA bundled by Bun | `index.html` + `src/app.ts` |
