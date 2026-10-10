@@ -36,7 +36,7 @@ import html from "./index.html";
 
 const api = defineApp({ dir: \`\${import.meta.dir}/pages\` });
 
-Bun.serve({ port: 3000, development: true, routes: { "/": html }, fetch: api.fetch });
+Bun.serve({ port: Number(process.env.PORT ?? 3000), development: true, routes: { "/": html }, fetch: api.fetch });
 `;
 
 const entryPlain = `import { defineApp } from "alfa";

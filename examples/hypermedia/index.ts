@@ -1,3 +1,3 @@
 import { defineApp } from "alfa";
 
-defineApp().listen(3000);
+defineApp().listen(Number(process.env.PORT ?? 3000));

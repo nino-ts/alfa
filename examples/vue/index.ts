@@ -5,7 +5,7 @@ import html from "./index.html";
 const api = defineApp({ dir: `${import.meta.dir}/pages` });
 
 Bun.serve({
-  port: 3000,
+  port: Number(process.env.PORT ?? 3000),
   development: true,
   routes: { "/": html },
   fetch: api.fetch,
