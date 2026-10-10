@@ -6,7 +6,7 @@ Postgres. No Prisma, Drizzle or TypeORM.
 ## Run
 
 ```bash
-docker compose up -d        # Postgres 16 on :5432
+docker compose up -d        # Postgres 18 on :5432
 cp .env.example .env        # DATABASE_URL=postgres://postgres:postgres@localhost:5432/alfa
 bun install
 bunx alfa migrate           # applies database/migrations/*.sql
