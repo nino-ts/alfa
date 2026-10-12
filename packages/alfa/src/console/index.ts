@@ -126,8 +126,11 @@ export function registerDefaultCommands(
         .toISOString()
         .replace(/[-:T.Z]/g, "")
         .slice(0, 14);
-      const target = `${dir}/${stamp}_${name}.sql`;
-      await Bun.write(target, `-- ${name}\n`);
+      const target = `${dir}/${stamp}_${name}.ts`;
+      await Bun.write(
+        target,
+        `import type { Migration } from "alfa/database";\n\nexport default {\n  async up() {},\n} satisfies Migration;\n`,
+      );
       console.log(`Created ${target}`);
       return 0;
     },

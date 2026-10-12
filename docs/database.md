@@ -1,6 +1,9 @@
 # Database
 
-`alfa` inclui um ORM próprio, **construído como extensão de `Bun.sql`** — você não precisa instalar Prisma, Drizzle, TypeORM ou qualquer outro ORM. A API é fluent, no estilo Drizzle.
+`alfa` inclui um ORM próprio, **construído como extensão de `Bun.sql`** — você não
+precisa instalar Prisma, Drizzle, TypeORM ou qualquer outro ORM. A definição de
+tabela é fluente, no estilo **Blueprint do Eloquent**; as queries são fluent, no
+estilo Drizzle.
 
 ## Conexão
 
@@ -18,78 +21,136 @@ export const db = new SQL(process.env.DATABASE_URL);
 | `mysql://…` / `mysql2://…` | MySQL / MariaDB |
 | `sqlite://app.db`, `file://./app.db`, `:memory:` | SQLite |
 
-## Definir tabela
+## Definir tabela (Blueprint)
 
 ```ts
 import { defineTable } from "alfa/database";
-import { db } from "./database";
+import { db } from "./connection";
 
-interface UserRow {
+interface Post {
   id: number;
-  name: string;
-  email: string;
+  title: string;
+  body: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export const users = defineTable<UserRow>(db, {
-  name: "users",
-  columns: {
-    id: "number",
-    name: "string",
-    email: "string",
-  },
+export const posts = defineTable<Post>(db, "posts", (table) => {
+  table.id();
+  table.string("title");
+  table.text("body").nullable();
+  table.boolean("published").default(false);
+  table.timestamps();
 });
 ```
 
-O primeiro parâmetro genérico define a forma da linha (`Row = Record<string, unknown>` por padrão). `TableDefinition` aceita `columns` como mapa de tipos (`string` | `number` | `boolean` | `date` | `json`).
+### Tipos de coluna
 
-## Consultas
+`id`, `uuid`, `string(name, length?)`, `text`, `integer`, `bigInteger`, `boolean`,
+`date`, `dateTime`, `timestamp`, `json`.
+
+### Modificadores encadeáveis
+
+`.nullable()` · `.unique()` · `.default(value)` · `.primary()`
+
+### Atalhos
+
+`table.timestamps()` → `createdAt` + `updatedAt` (**nullable**, como no Eloquent,
+para o insert funcionar sem fornecê-los).
+
+## Criar a tabela
+
+```ts
+await posts.createTable();   // CREATE TABLE IF NOT EXISTS
+await posts.dropTable();
+```
+
+O dialeto vem de `db.options.adapter` — nenhuma configuração extra. O SQL gerado:
+
+```ts
+import { createTableSQL, dropTableSQL, type Dialect } from "alfa/database";
+
+createTableSQL("postgres", "posts", posts.columns);
+dropTableSQL("sqlite", "posts");
+```
+
+| Tipo | sqlite | postgres | mysql |
+|---|---|---|---|
+| `id()` (auto) | `INTEGER PRIMARY KEY AUTOINCREMENT` | `SERIAL PRIMARY KEY` | `INT AUTO_INCREMENT` + `PRIMARY KEY` |
+| `uuid` | `TEXT` | `UUID` | `CHAR(36)` |
+| `string` | `TEXT` | `TEXT` | `VARCHAR(255)` |
+| `text` | `TEXT` | `TEXT` | `TEXT` |
+| `integer` | `INTEGER` | `INTEGER` | `INT` |
+| `bigInteger` | `INTEGER` | `BIGINT` | `BIGINT` |
+| `boolean` | `INTEGER` | `BOOLEAN` | `TINYINT(1)` |
+| `date` | `TEXT` | `DATE` | `DATE` |
+| `dateTime` | `TEXT` | `TIMESTAMPTZ` | `DATETIME` |
+| `timestamp` | `TEXT` | `TIMESTAMPTZ` | `TIMESTAMP` |
+| `json` | `TEXT` | `JSONB` | `JSON` |
+
+Fora do v1: `->index()`, `->foreign()`, `alter`. A app valida o resto.
+
+## Queries
 
 ```ts
 import { eq } from "alfa/database";
 
 // select
-const all = await users.select().get();
+const all = await posts.select().get();
 
 // colunas específicas
-const emails = await users.select(["id", "email"]).get();
+const ids = await posts.select(["id", "title"]).get();
 
 // where
-const one = await users.select().where(eq("email", email)).first();
+const one = await posts.select().where(eq("id", 1)).first();
 
-// where composto + limite
-const page = await users.select().where(eq("active", true)).limit(10).get();
+// where + limite
+const page = await posts.select().where(eq("published", true)).limit(10).get();
 
 // insert (um ou vários)
-await users.insert({ name: "João", email: "joao@example.com" });
-await users.insert([{ name: "Ana" }, { name: "Bia" }]);
+const created = await posts.insert({ title: "Olá", body: "mundo" });
+await posts.insert([{ title: "a" }, { title: "b" }]);
 
 // update
-await users.update({ name: "João Silva" }).where(eq("id", 1)).run();
+await posts.update({ title: "Novo" }).where(eq("id", 1)).exec();
 
 // delete
-await users.delete().where(eq("id", 1)).run();
+await posts.delete().where(eq("id", 1)).exec();
 ```
+
+`insert` devolve as linhas criadas (`RETURNING *`).
 
 ## SQL bruto
 
 `table.raw` é o próprio `Bun.SQL` (tagged template):
 
 ```ts
-const stats = await users.raw`SELECT role, COUNT(*) as total FROM users GROUP BY role`;
+const stats = await posts.raw`SELECT role, COUNT(*) AS total FROM posts GROUP BY role`;
 ```
 
-Placeholders usam numeração `$n` (PostgreSQL). O builder gera isso via `db.unsafe`.
+Placeholders usam numeração `$n` (PostgreSQL/SQLite). O builder gera isso via
+`db.unsafe`.
 
-## Migrations
+## Migrations (TypeScript)
+
+```ts
+// database/migrations/0001_create_posts.ts
+import { posts } from "../../lib/db";
+import type { Migration } from "alfa/database";
+
+export default {
+  async up() {
+    await posts.createTable();
+  },
+  async down() {
+    await posts.dropTable();
+  },
+} satisfies Migration;
+```
 
 ```bash
-bunx alfa make:migration create_users_table
-bunx alfa migrate
-```
-
-```
-database/migrations/
-  20261008090000_create_users_table.sql
+bunx alfa make:migration add_published   # cria o stub .ts
+bunx alfa migrate                        # aplica database/migrations/*.ts
 ```
 
 ```ts
@@ -98,16 +159,17 @@ import { migrate } from "alfa/database";
 const applied = await migrate(db, "database/migrations");
 ```
 
-O runner varre `*.sql` com `Bun.Glob`, ordena por nome e aplica cada arquivo dentro de `db.begin()` (transação própria por arquivo). Retorna os nomes aplicados.
+O runner varre `*.ts` com `Bun.Glob`, ordena por nome e aplica cada arquivo dentro
+de `db.begin()` (transação própria por arquivo). Retorna os nomes aplicados.
 
 ## Relações
 
 Não existem macros de relação em classe. Relações são joins explícitos:
 
 ```ts
-const rows = await users
+const rows = await posts
   .select()
-  .join(posts, eq(posts.userId, users.id))
+  .join(users, eq(posts.userId, users.id))
   .get();
 ```
 
@@ -115,3 +177,4 @@ const rows = await users
 
 - `alfa` não gerencia pool, transações, streaming, `sql.array` nem JSON/JSONB: `Bun.sql` já faz. O ORM expõe, não reimplementa.
 - Qualquer feature que dependa de Prisma/Drizzle/TypeORM não entra no core.
+- Não há camada de cast: os valores vêm como o driver devolve (booleans em SQLite voltam `0`/`1`).

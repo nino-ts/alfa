@@ -2,9 +2,9 @@ import type { HttpContext } from "alfa/http";
 import { session } from "../lib/session";
 import { findById } from "../lib/users";
 
-export default (ctx: HttpContext) => {
-  const userId = session.get<string>(ctx, "userId");
-  const user = userId ? findById(userId) : undefined;
+export default async (ctx: HttpContext) => {
+  const userId = session.get<number>(ctx, "userId");
+  const user = userId === undefined ? undefined : await findById(userId);
   const nav = user
     ? `<a href="/dashboard">dashboard</a> · <form method="post" action="/logout" style="display:inline"><button type="submit">logout</button></form>`
     : `<a href="/login">login</a>`;

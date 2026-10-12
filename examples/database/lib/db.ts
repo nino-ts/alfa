@@ -11,10 +11,14 @@ export const db = new SQL(
 export interface Post {
   id: number;
   title: string;
-  body: string;
+  body: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export const posts = defineTable(db, {
-  name: "posts",
-  columns: { id: "number", title: "string", body: "string" },
+export const posts = defineTable<Post>(db, "posts", (table) => {
+  table.id();
+  table.string("title");
+  table.text("body").nullable();
+  table.timestamps();
 });

@@ -1,24 +1,25 @@
 import { hashPassword } from "alfa/auth";
+import { eq } from "alfa/database";
+import { type User, users } from "./db";
 
-export interface User {
-  id: string;
-  email: string;
-  passwordHash: string;
+export type { User };
+
+export async function createUser(
+  email: string,
+  password: string,
+): Promise<User> {
+  const [user] = await users.insert({
+    email,
+    passwordHash: await hashPassword(password),
+  });
+  if (!user) throw new Error("Failed to create user");
+  return user;
 }
 
-// Demo store. In a real app this would be `${bun:sqlite}` / Bun.sql.
-const users: User[] = [
-  {
-    id: "1",
-    email: "ada@example.com",
-    passwordHash: await hashPassword("secret"),
-  },
-];
-
-export function findByEmail(email: string): User | undefined {
-  return users.find((user) => user.email === email);
+export async function findByEmail(email: string): Promise<User | undefined> {
+  return users.select().where(eq("email", email)).first();
 }
 
-export function findById(id: string): User | undefined {
-  return users.find((user) => user.id === id);
+export async function findById(id: number): Promise<User | undefined> {
+  return users.select().where(eq("id", id)).first();
 }

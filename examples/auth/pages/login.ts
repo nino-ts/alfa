@@ -25,7 +25,7 @@ export default async (ctx: HttpContext) => {
   const email = String(form.get("email") ?? "");
   const password = String(form.get("password") ?? "");
 
-  const user = findByEmail(email);
+  const user = await findByEmail(email);
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return text("Invalid credentials", { status: 401 });
   }

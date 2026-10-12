@@ -21,8 +21,9 @@ bunx alfa make:migration create_users
 
 ## `alfa migrate`
 
-Applies `*.sql` files from `database/migrations/` in order, each in its own
-transaction. Reads `DATABASE_URL` via `new SQL()`.
+Applies `*.ts` migrations from `database/migrations/` in order, each in its own
+transaction. Reads `DATABASE_URL` via `new SQL()`. Each migration default-exports
+`{ up }`; `down` is optional.
 
 ## `alfa make:page <path>`
 
@@ -41,7 +42,18 @@ export default (ctx: HttpContext) => "TODO: blog/[slug]";
 
 ## `alfa make:migration <name>`
 
-Creates `database/migrations/<timestamp>_<name>.sql`.
+Creates `database/migrations/<timestamp>_<name>.ts`:
+
+```ts
+import type { Migration } from "alfa/database";
+
+export default {
+  async up() {},
+} satisfies Migration;
+```
+
+Fill `up()` with the blueprint call (`await posts.createTable()`) — the ORM
+produces the table, so no SQL is written by hand.
 
 ## Custom kernel
 

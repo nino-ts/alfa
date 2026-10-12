@@ -3,12 +3,12 @@ import { redirect } from "alfa/http";
 import { session } from "../lib/session";
 import { findById } from "../lib/users";
 
-export default (ctx: HttpContext) => {
-  const userId = session.get<string>(ctx, "userId");
-  if (!userId) {
+export default async (ctx: HttpContext) => {
+  const userId = session.get<number>(ctx, "userId");
+  if (userId === undefined) {
     return redirect("/login");
   }
-  const user = findById(userId);
+  const user = await findById(userId);
   return `<!doctype html>
 <html lang="en">
   <head><meta charset="utf-8" /><title>dashboard</title></head>

@@ -50,7 +50,7 @@ describe("console kernel", () => {
     expect(await file.text()).toContain("HttpContext");
   });
 
-  test("make:migration scaffolds a sql file", async () => {
+  test("make:migration scaffolds a ts file", async () => {
     const dir = `${process.env.TEMP ?? process.env.TMP ?? "."}/alfa-test-migrations-${Date.now()}`;
     const kernel = registerDefaultCommands(createKernel(), {
       migrationsDir: dir,
@@ -58,6 +58,6 @@ describe("console kernel", () => {
     expect(await kernel.run(["make:migration", "create_users"])).toBe(0);
     const { readdirSync } = await import("node:fs");
     const files = readdirSync(dir);
-    expect(files.some((f) => f.endsWith("_create_users.sql"))).toBe(true);
+    expect(files.some((f) => f.endsWith("_create_users.ts"))).toBe(true);
   });
 });
