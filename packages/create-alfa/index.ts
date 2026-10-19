@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
+import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * create-alfa — scaffold a new alfa application.
@@ -8,6 +10,12 @@ import path from "node:path";
  *   bunx create-alfa myapp
  *   bunx create-alfa myapp --template react
  *   bunx create-alfa myapp --template vue
+ *   bunx create-alfa myapp --alfa link:../../alfa/packages/alfa
+ *
+ * Before the package is on npm, run it from a clone:
+ *   bun packages/create-alfa/index.ts myapp
+ * or link it globally:
+ *   cd packages/create-alfa && bun link && bunx create-alfa myapp
  */
 const argv = process.argv.slice(2);
 const positional = argv.filter((a) => !a.startsWith("--"));
@@ -25,7 +33,42 @@ async function write(relative: string, contents: string): Promise<void> {
   await writeFile(target, contents, "utf8");
 }
 
-const dependencies: Record<string, string> = { alfa: "latest" };
+/**
+ * Where does `alfa` come from?
+ *
+ * The npm name is not published yet, so a scaffold created from a clone points
+ * at the local framework instead of the registry. `--alfa <spec>` overrides it.
+ */
+function resolveAlfaSpec(): { spec: string; local: boolean } {
+  const overrideIndex = argv.indexOf("--alfa");
+  if (overrideIndex >= 0) {
+    const spec = argv[overrideIndex + 1];
+    if (spec)
+      return {
+        spec,
+        local: spec.startsWith("file:") || spec.startsWith("link:"),
+      };
+  }
+
+  // packages/create-alfa -> monorepo root -> packages/alfa
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const framework = path.resolve(here, "..", "..", "packages", "alfa");
+  if (existsSync(path.join(framework, "package.json"))) {
+    // `file:` is a directory dependency; `path.relative` returns an absolute
+    // path when the project lives on another drive.
+    const relative = path.relative(root, framework);
+    const target = path.isAbsolute(relative)
+      ? framework
+      : relative.split(path.sep).join("/");
+    return { spec: `file:${target}`, local: true };
+  }
+
+  return { spec: "latest", local: false };
+}
+
+const alfa = resolveAlfaSpec();
+
+const dependencies: Record<string, string> = { alfa: alfa.spec };
 const devDependencies: Record<string, string> = {
   "@types/bun": "^1.4.2",
   typescript: "^7.0.0",
@@ -190,3 +233,6 @@ bun run dev
 
 console.log(`Created alfa app "${projectName}" at ${root}`);
 console.log(`Next: cd ${projectName} && bun install && bun run dev`);
+if (alfa.local) {
+  console.log(`Using the local alfa: ${alfa.spec}`);
+}

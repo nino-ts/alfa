@@ -26,8 +26,8 @@
     "typecheck:examples": "bun run --cwd=examples/blog-react typecheck",
     "verify:docs": "bun run scripts/check-docs.ts",
     "docs:build": "bun run scripts/build-docs.ts",
-    "link:all": "bun --cwd packages/alfa link && bun --cwd packages/create-alfa link",
-    "unlink:all": "bun --cwd packages/alfa unlink && bun --cwd packages/create-alfa unlink"
+    "link:all": "cd packages/alfa && bun link && cd ../create-alfa && bun link",
+    "unlink:all": "cd packages/alfa && bun unlink && cd ../create-alfa && bun unlink"
   },
   "packageManager": "bun@1.4.2",
   "devDependencies": {

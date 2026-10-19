@@ -16,6 +16,30 @@ Publishes **2 packages** on npm (once the registry name is resolved):
 > Publisher is configured. The publish workflow fails on purpose. Until this is
 > resolved, use the clone with `bun link`.
 
+### Creating an app before publishing
+
+`create-alfa` is not on npm either, so `bunx create-alfa` needs a local link:
+
+```bash
+git clone https://github.com/nino-ts/alfa
+cd alfa
+bun run link:all            # links both `alfa` and `create-alfa` globally
+
+# then, anywhere:
+bunx create-alfa myapp
+cd myapp && bun install && bun run dev
+```
+
+Without linking, run it straight from the clone:
+
+```bash
+bun packages/create-alfa/index.ts myapp
+```
+
+Either way the scaffold points `alfa` at the local framework
+(`"alfa": "file:../../alfa/packages/alfa"`) instead of the registry, so the
+third-party `alfa` package is never installed.
+
 ## Layout
 
 ```
