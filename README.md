@@ -28,6 +28,7 @@ alfa/
 ├── examples/
 │   ├── hello-world/       # smallest app
 │   ├── blog/              # dynamic routes + data
+│   ├── blog-react/        # React SSR + shadcn/ui + Tailwind
 │   ├── api/               # REST JSON API
 │   ├── auth/              # session middleware + passwords
 │   ├── forms/             # HTMX + Standard Schema validation

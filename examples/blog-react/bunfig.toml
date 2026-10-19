@@ -1,0 +1,2 @@
+# The Tailwind stylesheet is compiled by src/css.ts (bun-plugin-tailwind),
+# so no static-server plugin is needed here.
