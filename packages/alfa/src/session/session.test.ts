@@ -56,6 +56,18 @@ describe("session cookieSession", () => {
     expect(await res.text()).toBe("undefined");
   });
 
+  test("missing session middleware is reported by helpers", () => {
+    const bundle = cookieSession({ secret });
+    const ctx = ctxFor(new Request("http://x/"));
+
+    expect(() => bundle.get(ctx, "userId")).toThrow(
+      "Session middleware is not installed on this request",
+    );
+    expect(() => bundle.set(ctx, "userId", 42)).toThrow(
+      "Session middleware is not installed on this request",
+    );
+  });
+
   test("destroy clears cookie with maxAge 0", async () => {
     const bundle = cookieSession({ secret });
     const res = await bundle.middleware(

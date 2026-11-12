@@ -54,6 +54,9 @@ export async function parse<Schema extends StandardSchemaV1>(
 ): Promise<InferOutput<Schema>> {
   const result = await schema["~standard"].validate(data);
   if (result.issues) {
+    if (result.issues.length === 0) {
+      throw new Error("Schema validation failed without issues");
+    }
     throw new ValidationError(result.issues);
   }
   return result.value as InferOutput<Schema>;

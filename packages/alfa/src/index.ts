@@ -106,10 +106,12 @@ export function defineApp(options: DefineAppOptions = {}): App {
               },
             }),
         fetch,
-        error: (error) =>
-          new Response(`Internal Server Error: ${String(error)}`, {
+        error: (error) => {
+          console.error("Unhandled request error", error);
+          return new Response("Internal Server Error", {
             status: 500,
-          }),
+          });
+        },
       }),
   };
 }

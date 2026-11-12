@@ -36,12 +36,20 @@ function getStore(ctx: HttpContext): SessionStore | undefined {
   return undefined;
 }
 
+function requireStore(ctx: HttpContext): SessionStore {
+  const store = getStore(ctx);
+  if (!store) {
+    throw new Error("Session middleware is not installed on this request");
+  }
+  return store;
+}
+
 const helpers: SessionHelpers = {
   get: <T = unknown>(ctx: HttpContext, key: string): T | undefined =>
-    getStore(ctx)?.get<T>(key),
-  set: (ctx, key, value) => getStore(ctx)?.set(key, value),
+    requireStore(ctx).get<T>(key),
+  set: (ctx, key, value) => requireStore(ctx).set(key, value),
   destroy: async (ctx) => {
-    await getStore(ctx)?.destroy();
+    await requireStore(ctx).destroy();
   },
 };
 
@@ -68,7 +76,8 @@ function decodePayload(
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       return parsed as Record<string, unknown>;
     }
-  } catch {
+  } catch (error) {
+    console.warn("Invalid cookie session payload", error);
     return undefined;
   }
   return undefined;
@@ -156,7 +165,8 @@ export function redisSession(options: RedisSessionOptions = {}): SessionBundle {
           if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
             data = parsed as Record<string, unknown>;
           }
-        } catch {
+        } catch (error) {
+          console.error("Invalid Redis session payload", error);
           data = {};
         }
       } else {

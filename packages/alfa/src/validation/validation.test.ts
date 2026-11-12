@@ -56,6 +56,19 @@ describe("validation parse", () => {
       ValidationError,
     );
   });
+
+  test("reports a schema failure without issues", async () => {
+    const invalidSchema: StandardSchemaV1 = {
+      "~standard": {
+        version: 1,
+        validate: () => ({ issues: [] }),
+      },
+    };
+
+    await expect(parse(invalidSchema, "x")).rejects.toThrow(
+      "Schema validation failed without issues",
+    );
+  });
 });
 
 describe("validation parseBody", () => {
